@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Emblema conceptual Guarani Coin</title>
+  <desc id="desc">Medallón dorado con una G estilizada y motivos geométricos guaraníes.</desc>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0b0"/>
+      <stop offset=".45" stop-color="#e5b94f"/>
+      <stop offset="1" stop-color="#9d6926"/>
+    </linearGradient>
+    <radialGradient id="face" cx=".36" cy=".26" r=".82">
+      <stop offset="0" stop-color="#253c44"/>
+      <stop offset="1" stop-color="#101b24"/>
+    </radialGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="59" fill="#111a20" stroke="url(#metal)" stroke-width="3"/>
+  <circle cx="64" cy="64" r="51" fill="url(#face)" stroke="#73d5d3" stroke-opacity=".75" stroke-width="1.5"/>
+  <circle cx="64" cy="64" r="44" fill="none" stroke="url(#metal)" stroke-width="1.2" stroke-dasharray="2 4"/>
+  <g fill="none" stroke="#e8c56e" stroke-width="1.6" opacity=".85">
+    <path d="M64 18v9m0 74v9M18 64h9m74 0h9M31.5 31.5l6.4 6.4m52.2 52.2 6.4 6.4m0-65-6.4 6.4m-52.2 52.2-6.4 6.4"/>
+    <path d="m64 30 4 6 7-1-1 7 6 4-6 4 1 7-7-1-4 6-4-6-7 1 1-7-6-4 6-4-1-7 7 1z"/>
+  </g>
+  <path d="M80 51a22 22 0 1 0 4 22H67v-9h27v5a31 31 0 1 1-8-22z" fill="url(#metal)" filter="url(#glow)"/>
+  <circle cx="91" cy="39" r="3" fill="#85eee2"/>
+</svg>

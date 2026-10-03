@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071312">
+    <meta name="description" content="Gcoin Guaraní: camino, nodos y recompensas culturales.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Gcoin Guaraní">
+    <title>Gcoin Guaraní — Camino de los nodos</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/guarani-coin.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/guarani-coin.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7914447141570499" crossorigin="anonymous"></script>
+    <script src="/script.js" defer></script>
+  </head>
+        <img class="brand-mark" src="/guarani_coin.jpeg" alt="Moneda Guaraní Coin">
+        <span class="brand-copy"><strong>GCOIN</strong><span>GUARANÍ</span></span>
+      </a>
+      <div class="topbar-right">
+        <div class="top-live-counters" aria-label="Resumen de puntos y gemas">
+          <div class="top-gem-side top-gem-balance">
+            <span class="top-counter-label"><span class="top-gem-spark" aria-hidden="true">✧</span> GEMAS</span>
+            <strong id="top-gems">0</strong>
+            <small id="top-gems-credit">Bonificación automática</small>
+          </div>
+          <div class="top-points-clock" aria-label="Puntos del ciclo actual">
+            <span class="top-counter-label">PUNTOS DEL CICLO</span>
+            <strong id="top-points" class="digital-counter">0</strong>
+            <small><span id="top-nodes">0</span> nodos · hasta 11.000 pts</small>
+          </div>
+          <div class="top-gem-side top-gem-next">
+            <span class="top-counter-label"><span class="top-gem-spark" aria-hidden="true">✦</span> PRÓXIMO HITO</span>
+            <strong id="top-gems-next">1.000 pts</strong>
+            <small id="top-gems-next-reward">+5 gemas automáticas</small>
+          </div>
+        </div>
+        <span class="network-status"><i></i> RED ACTIVA</span>
+        <span id="user-label" class="user-label hidden"></span>
+        <button id="logout-button" class="button button-quiet hidden" type="button">Cerrar sesión</button>
+      </div>
+    </header>
+    <div class="roulette-title-bar">
+      <div class="environment-banner">
+        <h1>Gcoin Guaraní</h1>
+        <span id="environment-cycle" class="environment-cycle" aria-live="off">Gcoin Guaraní — DÍA</span>
+      </div>
+      <span class="roulette-banner-caption">SENDEROS, NODOS Y RECOMPENSAS</span>
+    </div>
+
+    <main class="page-shell">
+      <section class="app-access-card" aria-labelledby="app-access-title">
+        <div class="app-access-copy">
+          <p class="eyebrow">GCOIN EN TU TELÉFONO</p>
+          <h2 id="app-access-title">Lleva el camino contigo.</h2>
+          <p>Escanea el código para abrir Gcoin Guaraní en tu celular. En iPhone, usa Compartir → Añadir a pantalla de inicio.</p>
+          <button id="install-app-button" class="button button-primary hidden" type="button">Instalar aplicación</button>
+        </div>
+        <a class="app-qr-link" href="https://gcoin.depinguarani.com/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Gcoin Guaraní">
+          <img
+            class="app-qr-image"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=192x192&amp;data=https%3A%2F%2Fgcoin.depinguarani.com%2F"
+            alt="Código QR para abrir https://gcoin.depinguarani.com/"
+            width="144"
+            height="144">
+          <span>ABRIR GCOIN</span>
+        </a>
+      </section>
+      <section id="auth-view" class="auth-view">
+        <div class="auth-art">
+          <p class="eyebrow">UN CAMINO QUE NOS UNE</p>
+          <h1>Cada paso<br>deja <span>huella.</span></h1>
+          <p class="auth-description">Conecta tu nodo, acompaña el camino y descubre los hitos que guardan la memoria.</p>
+          <div class="auth-stars" aria-hidden="true">✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦</div>
+        </div>
+        <form id="auth-form" class="auth-card">
+          <div class="auth-tabs" role="tablist" aria-label="Acceso a la cuenta">
+            <button class="auth-tab active" type="button" data-auth-mode="login" role="tab" aria-selected="true">Iniciar sesión</button>
+            <button class="auth-tab" type="button" data-auth-mode="register" role="tab" aria-selected="false">Crear cuenta</button>
+          </div>
+          <h2 id="auth-title">Qué bueno verte.</h2>
+          <p id="auth-subtitle" class="muted">Entra a tu espacio y sigue avanzando.</p>
+          <label class="field-label" for="auth-username">Usuario</label>
+          <input id="auth-username" name="username" autocomplete="username" maxlength="64" required>
+          <label class="field-label" for="auth-password">Contraseña</label>
+          <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="256" required>
+          <div id="referrer-field" class="hidden">
+            <label class="field-label" for="auth-referrer">Código de referido <span class="optional">opcional</span></label>
+            <input id="auth-referrer" name="referredBy" autocomplete="off" maxlength="64">
+          </div>
+          <p id="auth-message" class="form-message" role="status"></p>
+          <button id="auth-submit" class="button button-primary button-wide" type="submit">Entrar al camino <span aria-hidden="true">↗</span></button>
+          <p class="auth-footnote">Tus puntos y recompensas se validan y guardan en el servidor.</p>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="dashboard hidden" aria-live="polite">
+        <div class="hero-heading">
+          <div>
+            <p class="eyebrow">TU CAMINO, TU HUELLA</p>
+            <h1>El sendero <span>guaraní</span></h1>
+            <p class="muted hero-subtitle">Cada minuto verificado ilumina un poco más el camino.</p>
+          </div>
+          <button id="refresh-button" class="button button-outline" type="button"><span aria-hidden="true">↻</span> Actualizar</button>
+        </div>
+
+        <div id="dashboard-message" class="notice hidden" role="status"></div>
+
+        <section class="stat-grid" aria-label="Resumen de progreso">
+          <article class="stat-card points-card">
+            <div class="stat-topline"><span class="stat-label">💎 PUNTOS DEL CICLO (HOY)</span><span class="stat-icon cyan-icon" aria-hidden="true">◈</span></div>
+            <div class="stat-number"><span id="points-today">0</span><small>pts</small></div>
+            <div class="progress-track" role="progressbar" aria-label="Progreso del ciclo de puntos" aria-valuemin="0" aria-valuemax="11000" aria-valuenow="0"><span id="points-progress"></span></div>
+            <div class="stat-foot"><span>Avance del ciclo</span><strong><span id="points-percentage">0%</span> · 11.000 pts</strong></div>
+            <p id="reset-countdown" class="stat-note">Límite fijo de 11.000 puntos en una ventana móvil de 24 h.</p>
+          </article>
+          <article class="stat-card gems-card">
+            <div class="stat-topline"><span class="stat-label">GEMAS DE BONIFICACIÓN</span><span class="stat-icon gold-icon" aria-hidden="true">✧</span></div>
+            <div class="stat-number"><span id="gems-balance">0</span><small>gemas</small></div>
+            <div class="gems-decoration" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>·</span><span>✧</span></div>
+            <p class="stat-note">Se acreditan una sola vez al alcanzar cada hito.</p>
+          </article>
+          <article class="stat-card nodes-card">
+            <div class="stat-topline"><span class="stat-label">TUS NODOS</span><span class="stat-icon green-icon" aria-hidden="true">⌁</span></div>
+            <div class="stat-number"><span id="node-count">0</span><small>registrados</small></div>
+            <p class="stat-note">Los nodos envían su propio heartbeat seguro.</p>
+          </article>
+          <article class="stat-card network-total-card" aria-labelledby="network-total-title">
+            <div class="network-total-heading">
+              <div class="network-total-copy">
+                <div class="stat-topline">
+                  <span id="network-total-title" class="stat-label">🪙 ⏳ ACUMULADO HISTÓRICO GLOBAL (DE TODOS LOS USUARIOS)</span>
+                  <span class="network-total-scope">SQLite · ESTA INSTANCIA</span>
+                </div>
+                <div class="network-total-number">
+                  <strong id="network-points-total" aria-live="polite">No disponible</strong>
+                  <span>pts DePIN históricos</span>
+                </div>
+              </div>
+              <div class="network-total-coin">
+                <img src="/guarani_coin.jpeg" alt="Moneda Guarani Coin 2026">
+                <span>GUARANI COIN <small>CONCEPTO · 2026</small></span>
+              </div>
+            </div>
+            <div class="network-total-meta">
+              <span><strong id="network-user-count">—</strong> cuentas</span>
+              <span><strong id="network-node-count">—</strong> nodos registrados</span>
+              <span id="network-total-status" role="status">Sincronizando el total persistido</span>
+            </div>
+            <p class="network-total-note">Total calculado a partir de los puntos históricos guardados por los nodos en esta base de datos. Crece con cada heartbeat DePIN acreditado; el tope personal de 11.000 no se transfiere ni se suma dos veces. No incluye premios de ruleta ni otras instalaciones de la red.</p>
+            <p class="network-roadmap-note">El total representa puntos DePIN, no monedas emitidas ni saldo de token. Un eventual TGE tras conseguir inversionistas es una posibilidad de hoja de ruta, no un lanzamiento confirmado ni una promesa de valor.</p>
+          </article>
+        </section>
+
+        <section class="aura-section" aria-labelledby="aura-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">SISTEMA DE MINERÍA &amp; RANGOS AURA</p>
+              <h2 id="aura-title">Matriz de nodos</h2>
+            </div>
+            <span id="aura-summary" class="muted">0 de 9 espacios ocupados</span>
+          </div>
+          <div id="aura-node-matrix" class="aura-node-matrix" aria-live="polite"></div>
+          <p class="fine-print">Los estados se actualizan al sincronizar el panel cada 20 segundos. Se muestran los niveles y multiplicadores solo si existen en los datos servidos por la API; la vista no inventa valores ni aplica bonificaciones.</p>
+        </section>
+
+        <section class="roulette-panel" aria-labelledby="roulette-title">
+          <div class="roulette-heading">
+            <div>
+              <p class="eyebrow">UN GIRO, UNA NUEVA HUELLA</p>
+              <h2 id="roulette-title">La ruleta Gcoin</h2>
+              <p class="muted">Premios sorteados por el servidor, sin depender de los anuncios.</p>
+            </div>
+            <span class="spin-counter"><strong id="spins-remaining">15</strong><span>/ 15 giros<br>en este ciclo</span></span>
+          </div>
+          <div class="roulette-layout">
+            <div class="roulette-artwork" aria-label="Ilustración de la ruleta Gcoin">
+              <img class="roulette-artwork-image" src="/guarani-fondo.jpg" alt="Ilustración del camino guaraní al atardecer, con un joven y la ruleta Gcoin">
+              <div class="wheel-pointer" aria-hidden="true"></div>
+              <div id="roulette-wheel" class="roulette-wheel" role="img" aria-label="Ruleta de premios ponderados: 10, 30, 50, 100 o 1.000 puntos">
+                <span class="wheel-mark wheel-mark-10">10</span>
+                <span class="wheel-mark wheel-mark-30">30</span>
+                <span class="wheel-mark wheel-mark-50">50</span>
+                <span class="wheel-mark wheel-mark-100">100</span>
+                <span class="wheel-mark wheel-mark-1000">1.000</span>
+                <span class="wheel-hub"><strong>G</strong><small>COIN</small></span>
+              </div>
+              <span class="roulette-art-caption">LA SUERTE TAMBIÉN DEJA HUELLA</span>
+            </div>
+            <div class="roulette-details">
+              <div class="prize-list" aria-label="Premios y probabilidades">
+                <div class="prize-row"><svg class="prize-icon prize-swatch-10" aria-hidden="true"><use href="#prize-coin-symbol"></use></svg><strong>10 pts</strong><span>45%</span></div>
+                <div class="prize-row"><svg class="prize-icon prize-swatch-30" aria-hidden="true"><use href="#prize-coin-symbol"></use></svg><strong>30 pts</strong><span>30%</span></div>
+                <div class="prize-row"><svg class="prize-icon prize-swatch-50" aria-hidden="true"><use href="#prize-coin-symbol"></use></svg><strong>50 pts</strong><span>15%</span></div>
+                <div class="prize-row"><svg class="prize-icon prize-swatch-100" aria-hidden="true"><use href="#prize-coin-symbol"></use></svg><strong>100 pts</strong><span>9,9%</span></div>
+                <div class="prize-row prize-row-jackpot"><svg class="prize-icon prize-swatch-1000" aria-hidden="true"><use href="#prize-jackpot-symbol"></use></svg><strong>1.000 pts</strong><span>0,1%</span></div>
+              </div>
+              <p id="roulette-message" class="roulette-message" role="status">Tienes 15 giros disponibles en este ciclo de 24 horas.</p>
+              <button id="spin-button" class="button button-spin button-wide" type="button" disabled>
+                <span aria-hidden="true">✦</span> GIRAR RULETA
+              </button>
+              <div id="roulette-result" class="roulette-result hidden" aria-live="polite"></div>
+              <p class="roulette-disclaimer">Cada giro consume uno de tus 15 intentos. El premio y el saldo los calcula el backend; el tope compartido del ciclo es 11.000 puntos.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="landscape-card" aria-label="Paisaje ilustrado y progreso del nodo">
+          <div class="landscape-caption">
+            <span class="landscape-tag"><i></i> CHACO · NOCHE</span>
+            <span id="landscape-progress" class="landscape-progress">INICIO DEL CAMINO</span>
+          </div>
+          <svg id="journey-scene" class="journey-scene" viewBox="0 0 1000 560" role="img" aria-labelledby="scene-title scene-description" preserveAspectRatio="xMidYMid meet">
+            <title id="scene-title">Un camino iluminado entre el Chaco nocturno y el río</title>
+            <desc id="scene-description">Una figura guaraní estilizada recorre un sendero ocre. Al fondo se ven el monte chaqueño, la costa y barcos lejanos bajo la luna.</desc>
+            <defs>
+              <linearGradient id="sky-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#091827"/>
+                <stop offset=".6" stop-color="#102326"/>
+                <stop offset="1" stop-color="#122b25"/>
+              </linearGradient>
+              <linearGradient id="river-gradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#123d43"/>
+                <stop offset="1" stop-color="#071e27"/>
+              </linearGradient>
+              <linearGradient id="trail-gradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#674324"/>
+                <stop offset=".55" stop-color="#9b682e"/>
+                <stop offset="1" stop-color="#d39a45"/>
+              </linearGradient>
+              <radialGradient id="moon-glow">
+                <stop offset="0" stop-color="#e7d9a6" stop-opacity=".2"/>
+                <stop offset="1" stop-color="#e7d9a6" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="gold-glow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="soft-shadow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="4"/>
+              </filter>
+            </defs>
+            <rect width="1000" height="560" fill="url(#sky-gradient)"/>
+            <circle cx="786" cy="101" r="112" fill="url(#moon-glow)"/>
+            <circle cx="786" cy="101" r="28" fill="#e9dfb8" opacity=".83"/>
+            <circle cx="797" cy="93" r="28" fill="#102326" opacity=".9"/>
+            <g fill="#eceddb" opacity=".58" aria-hidden="true">
+              <circle cx="88" cy="79" r="1.5"/><circle cx="159" cy="133" r="1"/>
+              <circle cx="247" cy="65" r="1.2"/><circle cx="338" cy="116" r="1"/>
+              <circle cx="449" cy="54" r="1.6"/><circle cx="544" cy="91" r="1"/>
+              <circle cx="616" cy="44" r="1.1"/><circle cx="912" cy="62" r="1.2"/>
+              <circle cx="960" cy="159" r="1.4"/><circle cx="675" cy="156" r="1"/>
+              <circle cx="376" cy="171" r="1.1"/><circle cx="115" cy="193" r="1"/>
+            </g>
+            <path d="M0 252 Q130 199 252 242 T500 227 T762 235 T1000 205 L1000 385 L0 385Z" fill="#142a27"/>
+            <path d="M0 287 Q171 251 327 276 T629 264 Q773 256 1000 280 L1000 560 L0 560Z" fill="url(#river-gradient)" opacity=".93"/>
+            <path d="M641 267 Q745 250 1000 275 L1000 314 Q809 294 650 307Z" fill="#1e3931"/>
+            <path d="M653 306 Q790 300 1000 320" fill="none" stroke="#b18a50" stroke-opacity=".3" stroke-width="2"/>
+            <g class="arrival-ships" aria-label="Barcos europeos llegando por el río">
+              <g transform="translate(696 273) scale(.72)">
+                <path d="M-55 32h115l-14 18h-83z" fill="#081612" stroke="#d0ad68" stroke-width="2"/>
+                <path d="M2 30V-34M29 30V-22" fill="none" stroke="#c8a668" stroke-width="3"/>
+                <path d="M-30-23 0-13V18h-30zM5-27l21 7v38H5zM32-16l22 7v31H32z" fill="#ded0a5" fill-opacity=".76" stroke="#88754c" stroke-width="1.5"/>
+                <path d="M-45 34q46 8 95 0" fill="none" stroke="#e3c783" stroke-width="2"/>
+                <path d="M-3-39l6 5-6 5-5-5z" fill="#bf5048"/>
+              </g>
+              <g transform="translate(826 286) scale(.46)">
+                <path d="M-55 32h115l-14 18h-83z" fill="#081612" stroke="#d0ad68" stroke-width="2"/>
+                <path d="M2 30V-34M29 30V-22" fill="none" stroke="#c8a668" stroke-width="3"/>
+                <path d="M-30-23 0-13V18h-30zM5-27l21 7v38H5zM32-16l22 7v31H32z" fill="#ded0a5" fill-opacity=".76" stroke="#88754c" stroke-width="1.5"/>
+                <path d="M-45 34q46 8 95 0" fill="none" stroke="#e3c783" stroke-width="2"/>
+                <path d="M-3-39l6 5-6 5-5-5z" fill="#bf5048"/>
+              </g>
+            </g>
+            <g fill="#d2c296" opacity=".27">
+              <path d="M735 334h40"/><path d="M804 351h74"/><path d="M905 332h28"/>
+              <path d="M688 375h58"/><path d="M832 397h47"/><path d="M748 421h86"/>
+            </g>
+            <g fill="#091815" stroke="#091815" stroke-linejoin="round">
+              <path d="M681 272l19-15 18 15v6h-39z"/><path d="M695 260v-11h2v11"/>
+              <path d="M812 284l22-18 20 18v6h-42z"/><path d="M829 268v-14h2v14"/>
+              <path d="M857 289l16-12 17 12v4h-33z"/>
+            </g>
+            <g fill="#071311" opacity=".95">
+              <path d="M0 296q27-46 48 0q24-63 45 0q20-39 39 0q26-68 48 0q22-42 43 0l18 37H0z"/>
+              <path d="M0 353q29-55 57 0q22-39 43 0q22-72 44 0q31-52 61 0q24-40 48 0l20 53H0z"/>
+              <path d="M58 355l-5-83h5l8 83M179 354l8-101h5l-5 101M246 372l1-72h5l8 72"/>
+              <path d="M917 334q17-51 34 0q19-39 37 0q14-52 27 0v53H917z"/>
+            </g>
+            <path d="M0 560V441q50-28 95 0q45-26 88 1q57-35 107 1q45-23 87 0v117Z" fill="#0c1c17"/>
+            <path d="M0 560V491q44-36 94 0q39-25 83-1q44-37 89 1q39-21 82 0v69Z" fill="#10231a"/>
+            <path d="M177 535 C238 503 287 485 337 455 C399 418 359 381 431 348 C487 322 537 344 566 302 C600 253 564 226 627 198 C687 172 705 150 745 104" fill="none" stroke="#302014" stroke-width="76" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+            <path d="M177 535 C238 503 287 485 337 455 C399 418 359 381 431 348 C487 322 537 344 566 302 C600 253 564 226 627 198 C687 172 705 150 745 104" fill="none" stroke="url(#trail-gradient)" stroke-width="66" stroke-linecap="round" stroke-linejoin="round" opacity=".88"/>
+            <path d="M177 535 C238 503 287 485 337 455 C399 418 359 381 431 348 C487 322 537 344 566 302 C600 253 564 226 627 198 C687 172 705 150 745 104" fill="none" stroke="#e0b969" stroke-opacity=".25" stroke-width="2" stroke-dasharray="3 13"/>
+            <path id="progress-trail" d="M177 535 C238 503 287 485 337 455 C399 418 359 381 431 348 C487 322 537 344 566 302 C600 253 564 226 627 198 C687 172 705 150 745 104" fill="none" stroke="#ffda82" stroke-width="3.5" stroke-linecap="round" filter="url(#gold-glow)" opacity=".92"/>
+            <g id="thousand-markers" class="thousand-markers" aria-label="Hitos de puntos cada mil"></g>
+            <g id="milestone-markers" aria-hidden="true"></g>
+            <g transform="translate(0 0)" id="climber" aria-hidden="true">
+              <ellipse cx="0" cy="1" rx="22" ry="7" fill="#050c0a" opacity=".55" filter="url(#soft-shadow)"/>
+              <g class="climber-walk">
+              <g transform="scale(1.12)">
+              <g stroke="#332619" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M-4-25l-10 17 3 7M3-24l9 14-2 8" fill="none"/>
+                <path d="M-4-8l-10 6M10-4l9 4" fill="none"/>
+                <path d="M-5-37l-11 7-7-2M5-38l9-9 9-2" fill="none"/>
+                <path d="M-5-28q9 7 18 0l-4 12q-7 6-13 0z" fill="#a45d38" stroke="#6f4029"/>
+                <path d="M-6-39q0-14 9-15 10 1 9 15l-4 7-13-1z" fill="#a56b49" stroke="#674430"/>
+                <path d="M-7-48q9-5 18 1M-1-54l-6-11M3-54l2-14M7-53l9-10" fill="none" stroke="#dfbb71" stroke-width="3"/>
+                <path d="M-17-32q10 6 22 0l-2 6q-9 4-17 0z" fill="#d1a653" stroke="#79592e"/>
+                <path d="M17-46q9 13 0 28" fill="none" stroke="#c79a56" stroke-width="2"/>
+                <path d="M18-46l-3-3M18-46l4-1" fill="none" stroke="#e0c581" stroke-width="1.5"/>
+                <path d="M16-49q-8-7-15-2" fill="none" stroke="#dfd2ad" stroke-width="1"/>
+              </g>
+              </g>
+              </g>
+            </g>
+            <g fill="#162b1c" aria-hidden="true">
+              <path d="M21 506q-14-42 2-78 6 29 14 49 2-40 20-63-7 42 0 75 18-26 30-31-13 25-8 48z"/>
+              <path d="M77 533q-10-28 3-52 2 23 9 34 5-32 19-44-9 31 0 54 9-17 20-23-9 20-4 35z"/>
+              <path d="M875 518q-9-40 8-64 2 32 9 45 6-34 22-45-11 36 0 60 13-24 25-28-12 22-9 43z"/>
+              <path d="M944 474q-8-33 8-52 2 26 8 37 5-28 17-38-8 30 0 49 10-20 20-23-10 18-7 35z"/>
+            </g>
+          </svg>
+          <div class="scene-footer"><span>MONTE NATIVO</span><span>EL RÍO RECUERDA</span><span>UN PASO A LA VEZ</span></div>
+        </section>
+
+        <section class="milestone-section">
+          <div class="section-heading">
+            <div><p class="eyebrow">RECOMPENSAS DEL CAMINO</p><h2>Huellas que brillan</h2></div>
+            <span id="milestone-summary" class="muted">0 de 5 hitos desbloqueados</span>
+          </div>
+          <div id="milestone-roadmap" class="milestone-roadmap"></div>
+          <p class="fine-print">Cada hito entrega gemas una sola vez por cuenta. Los puntos de cada hito pertenecen a tu ciclo móvil de 24 horas.</p>
+        </section>
+
+        <section class="lower-grid">
+          <article class="panel nodes-panel">
+            <div class="section-heading compact-heading">
+              <div><p class="eyebrow">PRESENCIA DEPIN</p><h2>Mis nodos</h2></div>
+              <span class="panel-count" id="nodes-panel-count">0</span>
+            </div>
+            <div id="nodes-list" class="nodes-list"></div>
+            <form id="node-form" class="node-form">
+              <div class="form-row">
+                <label class="field-label" for="node-name">Nombre del nodo</label>
+                <input id="node-name" name="nodeName" maxlength="100" placeholder="Mi nodo del Chaco" required>
+              </div>
+              <div class="form-row">
+                <label class="field-label" for="wallet-address">Dirección de wallet <span class="optional">opcional</span></label>
+                <input id="wallet-address" name="walletAddress" maxlength="255" placeholder="0x… o dirección de tu red">
+              </div>
+              <p id="node-message" class="form-message" role="status"></p>
+              <button class="button button-primary button-wide" type="submit">+ Registrar un nodo</button>
+              <p class="fine-print">El secreto del nodo se muestra una sola vez. Configura tu agente para enviar heartbeats cada minuto.</p>
+            </form>
+          </article>
+          <article class="panel how-panel">
+            <p class="eyebrow">CÓMO SE SUMAN LOS PUNTOS</p>
+            <h2>Presencia, no atajos.</h2>
+            <div class="how-step"><span>01</span><p>Registra el nodo en tu cuenta y guarda su token secreto.</p></div>
+            <div class="how-step"><span>02</span><p>El agente del nodo envía un heartbeat autenticado cada minuto.</p></div>
+            <div class="how-step"><span>03</span><p>El servidor acredita 7,64 puntos/minuto si los intervalos verificados son de hasta 2 minutos.</p></div>
+            <div class="notice notice-subtle"><strong>Ventana móvil</strong><span>Tope de 11.000 puntos por cuenta. El contador se reinicia 24 horas después del primer punto del ciclo.</span></div>
+            <p class="fine-print">Un heartbeat verifica presencia periódica; por sí solo no demuestra que el nodo ejecute una tarea computacional específica.</p>
+          </article>
+        </section>
+
+        <section class="panel payout-panel" aria-labelledby="payout-title">
+          <div class="payout-heading">
+            <div>
+              <p class="eyebrow">RECOMPENSAS DEPIN VERIFICADAS</p>
+              <h2 id="payout-title">Wallet y retiros</h2>
+              <p class="muted">El saldo se acredita solo por puntos de heartbeat. Las gemas y los premios de ruleta no son retirables.</p>
+            </div>
+            <div class="payout-balance">
+              <span>DISPONIBLE</span>
+              <strong id="payout-balance">$0.00</strong>
+            </div>
+          </div>
+          <p id="payout-rate-note" class="payout-rate-note" role="status"></p>
+          <form id="wallet-form" class="wallet-form">
+            <div>
+              <label class="field-label" for="payout-wallet">Wallet para recibir el pago</label>
+              <input id="payout-wallet" name="walletAddress" autocomplete="off" minlength="8" maxlength="255" required placeholder="Dirección de wallet (Solana / Gcoin)">
+            </div>
+            <button id="save-wallet-button" class="button button-outline" type="submit">Guardar wallet</button>
+          </form>
+          <div class="payout-actions">
+            <button id="withdraw-button" class="button button-primary" type="button" disabled>Solicitar retiro (mínimo $5.00)</button>
+            <p id="payout-message" class="form-message" role="status"></p>
+          </div>
+          <div class="withdrawal-history">
+            <h3>Solicitudes recientes</h3>
+            <div id="withdrawal-list" class="withdrawal-list">
+              <p class="fine-print">Todavía no hay solicitudes.</p>
+            </div>
+          </div>
+          <p class="fine-print">Cada solicitud reserva el saldo y queda pendiente de revisión y pago manual. El correo es solo una notificación, no una confirmación de pago.</p>
+        </section>
+
+      </section>
+      <section class="ad-panel" aria-label="Publicidad">
+        <div class="ad-promo">
+          <img src="/guarani-fondo.jpg" alt="" class="ad-promo-image">
+          <div class="ad-promo-content">
+            <p class="eyebrow">GCOIN GUARANÍ · DEPIN</p>
+            <h2>Conecta con el camino.</h2>
+            <p>Explora el espacio publicitario y conoce las recompensas disponibles en tu cuenta.</p>
+            <div class="ad-promo-actions">
+              <button id="open-ad-button" class="button button-primary" type="button">Ver espacio publicitario <span aria-hidden="true">↗</span></button>
+              <button id="open-payouts-button" class="button button-outline" type="button">Ver recompensas DePIN</button>
+            </div>
+          </div>
+        </div>
+        <p class="eyebrow ad-section-label">ESPACIO PUBLICITARIO</p>
+        <div class="ad-slot">
+          <script>
+            atOptions = {
+              'key': '988a183b7df4e0e562578b54a45ccca8',
+              'format': 'iframe',
+              'height': 250,
+              'width': 300,
+              'params': {}
+            };
+          </script>
+          <script src="https://www.highrevenueformat.com/988a183b7df4e0e562578b54a45ccca8/invoke.js"></script>
+          <!-- Gcoin_Guarani_sidebar -->
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-7914447141570499"
+               data-ad-slot="9723176801"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>
+               (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
+        <div class="adsterra-slot" aria-label="Anuncio">
+          <script>
+            atOptions = {
+              'key': 'd4a087526cf3d027d7a27089eb2736b3',
+              'format': 'iframe',
+              'height': 250,
+              'width': 300,
+              'params': {}
+            };
+          </script>
+          <script src="https://www.highrevenueformat.com/d4a087526cf3d027d7a27089eb2736b3/invoke.js"></script>
+        </div>
+      </section>
+    </main>
+
+    <svg class="visual-symbol-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="aura-symbol-01" viewBox="0 0 48 48"><path d="M24 5 40 14v20L24 43 8 34V14L24 5Z"/><circle cx="24" cy="24" r="7"/><path d="M24 5v12m16-3-10 6m10 14-10-6M24 43V31M8 34l10-6M8 14l10 6"/></symbol>
+      <symbol id="aura-symbol-02" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="11"/><circle cx="24" cy="24" r="4"/><path d="M24 6v7m18 11h-7M24 42v-7M6 24h7"/></symbol>
+      <symbol id="aura-symbol-03" viewBox="0 0 48 48"><path d="M24 5 43 24 24 43 5 24 24 5Z"/><path d="m24 13 11 11-11 11-11-11 11-11Z"/><path d="M24 18v12m-6-6h12"/></symbol>
+      <symbol id="aura-symbol-04" viewBox="0 0 48 48"><path d="M7 37 24 7l17 30H7Z"/><path d="M15 31h18M19 24h10m-5-8v21"/><circle cx="24" cy="24" r="3"/></symbol>
+      <symbol id="aura-symbol-05" viewBox="0 0 48 48"><path d="M24 5 29 18 43 18 32 27 36 41 24 33 12 41 16 27 5 18 19 18 24 5Z"/><circle cx="24" cy="24" r="4"/></symbol>
+      <symbol id="aura-symbol-06" viewBox="0 0 48 48"><path d="M8 13h32v22H8z"/><path d="M14 29V19h5c7 0 7 10 0 10h-5Zm13 0V19h5c7 0 7 10 0 10h-5Z"/><path d="M8 8h32m-32 32h32"/></symbol>
+      <symbol id="aura-symbol-07" viewBox="0 0 48 48"><path d="M24 5 41 15v18L24 43 7 33V15L24 5Z"/><path d="m16 26 5 5 12-14"/><circle cx="24" cy="24" r="15"/></symbol>
+      <symbol id="aura-symbol-08" viewBox="0 0 48 48"><path d="M24 5c8 10 13 15 13 23a13 13 0 1 1-26 0c0-8 5-13 13-23Z"/><path d="M18 29c1 4 4 6 8 6m-2-21 5 8"/></symbol>
+      <symbol id="aura-symbol-09" viewBox="0 0 48 48"><path d="M24 4 29 17 43 18 32 27 36 42 24 34 12 42 16 27 5 18 19 17 24 4Z"/><path d="M24 14v18m-8-9h16"/><circle cx="24" cy="23" r="4"/></symbol>
+      <symbol id="prize-coin-symbol" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="8"/><path d="M18.5 11.5c-.7-.6-1.5-.9-2.5-.9-1.7 0-2.8.8-2.8 2s1 1.8 2.8 2.2 2.8 1 2.8 2.3-1.2 2.2-3 2.2c-1.1 0-2.1-.4-2.9-1.1M16 9v14"/></symbol>
+      <symbol id="prize-jackpot-symbol" viewBox="0 0 32 32"><path d="m6 12 6 5 4-9 4 9 6-5-2 13H8L6 12Z"/><path d="M9 28h14"/><circle cx="6" cy="10" r="2"/><circle cx="16" cy="6" r="2"/><circle cx="26" cy="10" r="2"/></symbol>
+    </svg>
+
+    <footer class="site-footer"><span>GCOIN GUARANÍ</span><span>Hecho para caminar en comunidad.</span></footer>
+
+    <div id="token-dialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="token-title">
+      <div class="dialog-card">
+        <button id="close-token-dialog" class="dialog-close" type="button" aria-label="Cerrar">×</button>
+        <p class="eyebrow">GUÁRDALO AHORA</p>
+        <h2 id="token-title">Tu nodo ya tiene su llave.</h2>
+        <p class="muted">Este secreto se muestra una sola vez. Configúralo como <code>X-Node-Token</code> en el agente del nodo.</p>
+        <div class="token-box"><code id="node-token-value"></code><button id="copy-token-button" class="button button-outline" type="button">Copiar</button></div>
+        <p id="token-copy-message" class="form-message" role="status"></p>
+        <button id="acknowledge-token" class="button button-primary button-wide" type="button">Ya lo guardé</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+    <script type="text/javascript" src="https://pl26071473.highrevenueformat.com/31531474/invoke.js"></script>
+  </body>
+</html>
