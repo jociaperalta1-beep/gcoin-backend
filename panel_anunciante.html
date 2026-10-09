@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Panel de demostración para configurar una campaña publicitaria en JP-Ads.">
+  <title>Panel de Anunciantes - JP-Ads</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #090e1b;
+      --surface: #111a2d;
+      --surface-soft: #151f35;
+      --text: #f2f5fc;
+      --muted: #a0aec5;
+      --accent: #8cf0d0;
+      --accent-hover: #a8f7df;
+      --border: rgba(183, 202, 233, 0.14);
+      --danger: #ff9d9d;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(48, 91, 139, 0.22), transparent 34rem),
+        var(--page);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .topbar {
+      display: flex;
+      min-height: 74px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0 clamp(1rem, 5vw, 4rem);
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 14, 27, 0.7);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 850;
+      letter-spacing: -0.04em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #092019;
+      font-size: 0.85rem;
+      letter-spacing: -0.08em;
+    }
+
+    .account-label {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    main {
+      width: min(100% - 2rem, 1120px);
+      margin-inline: auto;
+      padding-block: clamp(2.25rem, 6vw, 4.5rem);
+    }
+
+    .page-heading {
+      margin-bottom: 2rem;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.65rem;
+      color: var(--accent);
+      font-size: 0.73rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 0.7rem;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: -0.055em;
+      line-height: 1.1;
+    }
+
+    .page-heading > p:last-child {
+      max-width: 650px;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(290px, 0.8fr);
+      align-items: start;
+      gap: 1.25rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: linear-gradient(150deg, rgba(21, 31, 53, 0.98), rgba(17, 26, 45, 0.97));
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.19);
+    }
+
+    .form-card {
+      padding: clamp(1.25rem, 3vw, 2rem);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .step {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid rgba(140, 240, 208, 0.3);
+      border-radius: 10px;
+      background: rgba(140, 240, 208, 0.09);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .section-heading h2 {
+      margin-bottom: 0.2rem;
+      font-size: 1.15rem;
+      letter-spacing: -0.025em;
+    }
+
+    .section-heading p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.1rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .field-full {
+      grid-column: 1 / -1;
+    }
+
+    label,
+    .field-label {
+      color: #e1e8f5;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .field-hint {
+      margin: -0.15rem 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .control {
+      width: 100%;
+      min-height: 48px;
+      padding: 0.72rem 0.85rem;
+      border: 1px solid rgba(183, 202, 233, 0.18);
+      border-radius: 11px;
+      outline: none;
+      background: rgba(7, 12, 24, 0.58);
+      color: var(--text);
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .control::placeholder {
+      color: #73819a;
+    }
+
+    .control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(140, 240, 208, 0.13);
+    }
+
+    select.control {
+      cursor: pointer;
+    }
+
+    .upload-area {
+      display: flex;
+      min-height: 116px;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      padding: 1rem;
+      border: 1px dashed rgba(183, 202, 233, 0.3);
+      border-radius: 13px;
+      background: rgba(7, 12, 24, 0.35);
+      cursor: pointer;
+      transition: border-color 150ms ease, background-color 150ms ease;
+    }
+
+    .upload-area:hover,
+    .upload-area:focus-within {
+      border-color: var(--accent);
+      background: rgba(140, 240, 208, 0.045);
+    }
+
+    .upload-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(140, 240, 208, 0.1);
+      color: var(--accent);
+      font-size: 1.25rem;
+    }
+
+    .upload-copy {
+      min-width: 0;
+    }
+
+    .upload-copy strong {
+      display: block;
+      overflow: hidden;
+      color: #eaf0fa;
+      font-size: 0.88rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .upload-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+
+    .preview-image {
+      display: none;
+      width: 60px;
+      height: 60px;
+      flex: 0 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      object-fit: cover;
+    }
+
+    .preview-image.is-visible {
+      display: block;
+    }
+
+    .budget-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+
+    .budget-option {
+      position: relative;
+    }
+
+    .budget-option input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .budget-option label {
+      display: grid;
+      min-height: 76px;
+      align-content: center;
+      justify-items: center;
+      gap: 0.15rem;
+      padding: 0.55rem;
+      border: 1px solid rgba(183, 202, 233, 0.17);
+      border-radius: 12px;
+      background: rgba(7, 12, 24, 0.4);
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 150ms ease, background-color 150ms ease;
+    }
+
+    .budget-option label span {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 500;
+    }
+
+    .budget-option input:checked + label {
+      border-color: var(--accent);
+      background: rgba(140, 240, 208, 0.09);
+      box-shadow: inset 0 0 0 1px rgba(140, 240, 208, 0.12);
+    }
+
+    .budget-option input:focus-visible + label {
+      outline: 3px solid rgba(140, 240, 208, 0.55);
+      outline-offset: 3px;
+    }
+
+    .rate-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(150px, 0.65fr);
+      align-items: end;
+      gap: 0.9rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .rate-row .field {
+      gap: 0.4rem;
+    }
+
+    .currency-control {
+      position: relative;
+    }
+
+    .currency-control .control {
+      padding-right: 3.4rem;
+      text-align: right;
+    }
+
+    .currency-suffix {
+      position: absolute;
+      top: 50%;
+      right: 0.8rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+
+    .summary-card {
+      position: sticky;
+      top: 1rem;
+      overflow: hidden;
+    }
+
+    .summary-top {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-top h2 {
+      margin-bottom: 0.3rem;
+      font-size: 1.13rem;
+      letter-spacing: -0.025em;
+    }
+
+    .summary-top p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .cost-block {
+      padding: 1.4rem 1.5rem;
+    }
+
+    .cost-caption {
+      margin-bottom: 0.2rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+
+    .cost-value {
+      margin-bottom: 0.25rem;
+      color: var(--accent);
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      font-weight: 850;
+      letter-spacing: -0.06em;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .cost-detail {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .payment-box {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      align-items: center;
+      gap: 1rem;
+      margin: 0 1.5rem 1.5rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(7, 12, 24, 0.42);
+    }
+
+    .qr-frame {
+      display: grid;
+      width: 128px;
+      aspect-ratio: 1;
+      place-items: center;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .qr-frame svg {
+      display: block;
+      width: 112px;
+      height: 112px;
+      shape-rendering: crispEdges;
+    }
+
+    .payment-copy h3 {
+      margin-bottom: 0.35rem;
+      font-size: 0.91rem;
+    }
+
+    .payment-copy p {
+      margin-bottom: 0.55rem;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.28rem 0.48rem;
+      border: 1px solid rgba(255, 198, 116, 0.28);
+      border-radius: 999px;
+      background: rgba(255, 198, 116, 0.08);
+      color: #ffd28d;
+      font-size: 0.67rem;
+      font-weight: 750;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .notice {
+      margin: 0 1.5rem 1.5rem;
+      padding: 0.75rem 0.85rem;
+      border-left: 2px solid rgba(255, 198, 116, 0.7);
+      border-radius: 0 8px 8px 0;
+      background: rgba(255, 198, 116, 0.055);
+      color: #c6cde0;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .submit-button {
+      display: inline-flex;
+      width: 100%;
+      min-height: 50px;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0.75rem 1rem;
+      border: 0;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #082018;
+      cursor: pointer;
+      font-weight: 850;
+      transition: background-color 150ms ease, transform 150ms ease;
+    }
+
+    .submit-button:hover {
+      transform: translateY(-1px);
+      background: var(--accent-hover);
+    }
+
+    .submit-button:focus-visible {
+      outline: 3px solid #fff;
+      outline-offset: 3px;
+    }
+
+    .form-message {
+      min-height: 1.4em;
+      margin: 0.65rem 0 0;
+      color: var(--accent);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .form-message.is-error {
+      color: var(--danger);
+    }
+
+    .site-footer {
+      padding: 1.5rem 1rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .site-footer p {
+      margin: 0;
+    }
+
+    @media (max-width: 820px) {
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .summary-card {
+        position: static;
+      }
+
+      .summary-card-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(290px, 0.9fr);
+        align-items: start;
+      }
+
+      .summary-top {
+        grid-column: 1 / -1;
+      }
+
+      .cost-block {
+        align-self: center;
+      }
+
+      .payment-box {
+        margin-top: 1.25rem;
+      }
+
+      .notice,
+      .submit-wrap {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar {
+        min-height: 64px;
+      }
+
+      .account-label {
+        font-size: 0.78rem;
+      }
+
+      .field-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .field-full {
+        grid-column: auto;
+      }
+
+      .summary-card-inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .summary-top,
+      .notice,
+      .submit-wrap {
+        grid-column: auto;
+      }
+
+      .payment-box {
+        grid-template-columns: 112px minmax(0, 1fr);
+      }
+
+      .qr-frame {
+        width: 112px;
+      }
+
+      .qr-frame svg {
+        width: 98px;
+        height: 98px;
+      }
+
+      .rate-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 380px) {
+      .budget-options {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .budget-option label {
+        min-height: 60px;
+      }
+
+      .payment-box {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="JP-Ads, inicio">
+      <span class="brand-mark" aria-hidden="true">JP</span>
+      <span>JP-Ads</span>
+    </a>
+    <span class="account-label">Portal de anunciantes</span>
+  </header>
+
+  <main>
+    <header class="page-heading">
+      <p class="eyebrow">Crece con publicidad digital</p>
+      <h1>Panel de Anunciantes - JP-Ads</h1>
+      <p>Prepara tu campaña, elige el alcance deseado y consulta una estimación de inversión antes de continuar.</p>
+    </header>
+
+    <div class="workspace">
+      <form class="card form-card" id="campaign-form">
+        <section aria-labelledby="campaign-details-title">
+          <div class="section-heading">
+            <span class="step" aria-hidden="true">01</span>
+            <div>
+              <h2 id="campaign-details-title">Detalles de la campaña</h2>
+              <p>Cuéntanos qué quieres promocionar.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="advertiser">Nombre de la Empresa / Anunciante</label>
+              <input class="control" id="advertiser" name="advertiser" type="text" placeholder="Ej.: Acme Paraguay" autocomplete="organization" maxlength="100" required>
+            </div>
+
+            <div class="field">
+              <label for="ad-title">Título del Anuncio</label>
+              <input class="control" id="ad-title" name="adTitle" type="text" placeholder="Ej.: Descubre nuestra colección" maxlength="120" required>
+            </div>
+
+            <div class="field field-full">
+              <label for="destination-url">Enlace Web</label>
+              <input class="control" id="destination-url" name="destinationUrl" type="url" placeholder="https://ejemplo.com.py" inputmode="url" required>
+              <p class="field-hint">La dirección a la que llegará el público al hacer clic en tu anuncio.</p>
+            </div>
+
+            <div class="field field-full">
+              <span class="field-label">Imagen o banner del anuncio</span>
+              <label class="upload-area" for="banner-file">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span class="upload-copy">
+                  <strong id="upload-name">Subir Imagen/Banner del Anuncio</strong>
+                  <span>JPG, PNG, GIF o WebP · obligatorio · máximo 5 MB</span>
+                </span>
+                <img class="preview-image" id="banner-preview" alt="Vista previa del banner seleccionado">
+              </label>
+              <input class="visually-hidden" id="banner-file" name="banner" type="file" accept="image/jpeg,image/png,image/gif,image/webp" required>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="budget-title" style="margin-top: 2rem;">
+          <div class="section-heading">
+            <span class="step" aria-hidden="true">02</span>
+            <div>
+              <h2 id="budget-title">Elige el alcance</h2>
+              <p>Selecciona la cantidad de impresiones de tu campaña.</p>
+            </div>
+          </div>
+
+          <div class="budget-options" role="radiogroup" aria-label="Cantidad de impresiones">
+            <div class="budget-option">
+              <input id="impressions-1000" name="impressions" type="radio" value="1000">
+              <label for="impressions-1000">1.000 <span>impresiones</span></label>
+            </div>
+            <div class="budget-option">
+              <input id="impressions-5000" name="impressions" type="radio" value="5000" checked>
+              <label for="impressions-5000">5.000 <span>impresiones</span></label>
+            </div>
+            <div class="budget-option">
+              <input id="impressions-10000" name="impressions" type="radio" value="10000">
+              <label for="impressions-10000">10.000 <span>impresiones</span></label>
+            </div>
+          </div>
+
+          <div class="rate-row">
+            <div>
+              <p class="field-label" style="margin-bottom: 0.2rem;">Tarifa CPM de referencia</p>
+              <p class="field-hint" id="cpm-rate-hint">Tarifa base: $25.00 USD por cada 10.000 impresiones.</p>
+            </div>
+            <div class="field">
+              <label for="cpm-rate">Precio por 10.000</label>
+              <div class="currency-control">
+                <input class="control" id="cpm-rate" name="cpmRate" type="number" min="0.01" step="0.01" value="25.00" readonly aria-describedby="cpm-rate-hint">
+                <span class="currency-suffix">$ USD</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </form>
+
+      <aside class="card summary-card" aria-labelledby="summary-title">
+        <div class="summary-card-inner">
+          <div class="summary-top">
+            <p class="eyebrow">Tu inversión</p>
+            <h2 id="summary-title">Resumen de campaña</h2>
+            <p id="summary-campaign">Completa los datos para preparar tu anuncio.</p>
+          </div>
+
+          <div class="cost-block" aria-live="polite">
+            <p class="cost-caption">Costo estimado</p>
+            <p class="cost-value" id="estimated-cost">$12.50 USD</p>
+            <p class="cost-detail" id="cost-detail">5.000 impresiones · tarifa $25.00 USD / 10.000</p>
+          </div>
+
+          <div class="payment-box">
+            <div class="qr-frame">
+              <svg id="qr-simulation" viewBox="0 0 29 29" role="img" aria-label="Simulación visual de un código QR no escaneable">
+                <rect width="29" height="29" fill="#fff"/>
+                <g fill="#101827">
+                  <path d="M1 1h9v9H1zM3 3v5h5V3zM4 4h3v3H4zM19 1h9v9h-9zM21 3v5h5V3zM22 4h3v3h-3zM1 19h9v9H1zM3 21v5h5v-5zM4 22h3v3H4z"/>
+                  <path id="qr-pattern" d="M12 2h2v2h-2zM15 2h2v1h-2zM12 6h1v2h-1zM15 5h2v2h-2zM11 11h2v2h-2zM15 10h2v2h-2zM19 12h2v2h-2zM23 11h1v2h-1zM27 12h1v2h-1zM12 15h2v2h-2zM16 15h1v2h-1zM20 16h2v2h-2zM25 15h2v2h-2zM11 19h2v2h-2zM15 20h2v2h-2zM18 22h2v2h-2zM23 20h2v2h-2zM27 19h1v2h-1zM12 25h2v2h-2zM16 24h2v2h-2zM21 26h2v2h-2zM25 24h2v2h-2z"/>
+                </g>
+              </svg>
+            </div>
+            <div class="payment-copy">
+              <h3>Simulador de pago</h3>
+              <p>Vista previa del resumen y monto de tu campaña.</p>
+              <span class="demo-badge">Demostración</span>
+            </div>
+          </div>
+
+          <p class="notice">Este QR es solo una simulación visual, no se puede escanear ni realizar transferencias. Configura los datos de cobro de JP-Ads antes de aceptar pagos.</p>
+
+          <div class="submit-wrap" style="padding: 0 1.5rem 1.5rem;">
+            <button class="submit-button" type="submit" form="campaign-form">Preparar campaña <span aria-hidden="true">→</span></button>
+            <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>JP-Ads · Panel de demostración · Los valores mostrados son referenciales.</p>
+  </footer>
+
+  <script>
+    const form = document.querySelector("#campaign-form");
+    const impressionInputs = document.querySelectorAll('input[name="impressions"]');
+    const cpmInput = document.querySelector("#cpm-rate");
+    const estimatedCost = document.querySelector("#estimated-cost");
+    const costDetail = document.querySelector("#cost-detail");
+    const summaryCampaign = document.querySelector("#summary-campaign");
+    const formMessage = document.querySelector("#form-message");
+    const bannerInput = document.querySelector("#banner-file");
+    const uploadName = document.querySelector("#upload-name");
+    const bannerPreview = document.querySelector("#banner-preview");
+    const qrPattern = document.querySelector("#qr-pattern");
+    const submitButton = form.querySelector('button[type="submit"]');
+    let previewObjectUrl = null;
+
+    const usdFormat = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    function formatUSD(amount) {
+      return `$${usdFormat.format(amount)} USD`;
+    }
+
+    function getCampaignCost() {
+      const impressions = Number(form.elements.impressions.value);
+      const ratePerTenThousand = Number(cpmInput.value);
+      return {
+        impressions,
+        ratePerTenThousand,
+        total: Math.round((impressions / 10000) * ratePerTenThousand * 100) / 100
+      };
+    }
+
+    function updateSummary() {
+      const { impressions, ratePerTenThousand, total } = getCampaignCost();
+      estimatedCost.textContent = formatUSD(total);
+      costDetail.textContent = `${impressions.toLocaleString("es-PY")} impresiones · tarifa ${formatUSD(ratePerTenThousand || 0)} / 10.000`;
+
+      const title = form.elements.adTitle.value.trim();
+      summaryCampaign.textContent = title || "Completa los datos para preparar tu anuncio.";
+      updateQrSimulation(`${title}|${impressions}|${ratePerTenThousand}|${total}|USD`);
+    }
+
+    function updateQrSimulation(value) {
+      let seed = 2166136261;
+      for (let index = 0; index < value.length; index += 1) {
+        seed ^= value.charCodeAt(index);
+        seed = Math.imul(seed, 16777619);
+      }
+
+      let pattern = "";
+      for (let row = 0; row < 7; row += 1) {
+        for (let column = 0; column < 7; column += 1) {
+          seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+          if ((seed & 3) < 2) {
+            const x = 11 + column * 2;
+            const y = 11 + row * 2;
+            pattern += `M${x} ${y}h1v1h-1z`;
+          }
+        }
+      }
+      qrPattern.setAttribute("d", pattern);
+    }
+
+    impressionInputs.forEach((input) => input.addEventListener("change", updateSummary));
+    form.elements.adTitle.addEventListener("input", updateSummary);
+
+    bannerInput.addEventListener("change", () => {
+      const file = bannerInput.files[0];
+      formMessage.textContent = "";
+      formMessage.classList.remove("is-error");
+      bannerPreview.classList.remove("is-visible");
+      bannerPreview.removeAttribute("src");
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
+
+      if (!file) {
+        uploadName.textContent = "Subir Imagen/Banner del Anuncio";
+        return;
+      }
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      if (!allowedTypes.includes(file.type) || file.size === 0 || file.size > 5 * 1024 * 1024) {
+        bannerInput.value = "";
+        uploadName.textContent = "Subir Imagen/Banner del Anuncio";
+        formMessage.textContent = "Selecciona una imagen JPG, PNG, GIF o WebP válida de hasta 5 MB.";
+        formMessage.classList.add("is-error");
+        return;
+      }
+
+      uploadName.textContent = file.name;
+      previewObjectUrl = URL.createObjectURL(file);
+      bannerPreview.src = previewObjectUrl;
+      bannerPreview.classList.add("is-visible");
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      formMessage.classList.remove("is-error");
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      let destinationUrl;
+      try {
+        destinationUrl = new URL(form.elements.destinationUrl.value);
+      } catch {
+        form.elements.destinationUrl.setCustomValidity("Introduce una dirección web válida que comience con http:// o https://.");
+        form.elements.destinationUrl.reportValidity();
+        form.elements.destinationUrl.setCustomValidity("");
+        return;
+      }
+      if (destinationUrl.protocol !== "https:" && destinationUrl.protocol !== "http:") {
+        form.elements.destinationUrl.setCustomValidity("Utiliza una dirección web que comience con http:// o https://.");
+        form.elements.destinationUrl.reportValidity();
+        form.elements.destinationUrl.setCustomValidity("");
+        return;
+      }
+
+      const bannerFile = bannerInput.files[0];
+      submitButton.disabled = true;
+      formMessage.textContent = "Guardando la campaña...";
+
+      try {
+        const bannerDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.addEventListener("load", () => resolve(reader.result), { once: true });
+          reader.addEventListener("error", () => reject(reader.error || new Error("No se pudo leer el banner.")), { once: true });
+          reader.addEventListener("abort", () => reject(new Error("Se canceló la lectura del banner.")), { once: true });
+          reader.readAsDataURL(bannerFile);
+        });
+        const encodedBanner = String(bannerDataUrl).match(/^data:(image\/(?:jpeg|png|gif|webp));base64,([A-Za-z0-9+/]+={0,2})$/);
+        if (!encodedBanner) {
+          throw new Error("No se pudo preparar el archivo del banner para enviarlo.");
+        }
+
+        const response = await fetch("/api/campanas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            advertiser: form.elements.advertiser.value.trim(),
+            adTitle: form.elements.adTitle.value.trim(),
+            destinationUrl: destinationUrl.href,
+            impressions: Number(form.elements.impressions.value),
+            banner: {
+              filename: bannerFile.name,
+              mimeType: encodedBanner[1],
+              data: encodedBanner[2]
+            }
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "No se pudo guardar la campaña.");
+        }
+
+        formMessage.textContent = `Campaña #${result.id} guardada. Costo estimado: ${formatUSD(result.totalUsd)}.`;
+        updateSummary();
+      } catch (error) {
+        formMessage.textContent = error.message || "No se pudo guardar la campaña.";
+        formMessage.classList.add("is-error");
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    updateSummary();
+  </script>
+</body>
+</html>

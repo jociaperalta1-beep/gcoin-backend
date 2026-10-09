@@ -1,1 +1,5 @@
 /node_modules/
+/jp_ads.sqlite
+/.env
+/.env.*
+!/.env.example

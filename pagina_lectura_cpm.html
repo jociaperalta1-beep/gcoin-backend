@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Una guía clara para entender Web3, DePIN y las redes físicas descentralizadas que conectan el mundo digital con el real.">
+  <title>Web3 y DePIN: cuando internet sale al mundo real | Portal de Lecturas de Josías Peralta</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #0b1020;
+      --surface: #111a2e;
+      --surface-raised: #17233b;
+      --text: #edf3ff;
+      --muted: #a6b4ce;
+      --accent: #8cf0d0;
+      --accent-strong: #45d5ae;
+      --line: rgba(190, 211, 243, 0.13);
+      --measure: 720px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 15% 0%, rgba(63, 115, 171, 0.2), transparent 34rem),
+        var(--page);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .site-header {
+      padding: clamp(3.5rem, 9vw, 7rem) 1.25rem 3rem;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .header-inner,
+    main,
+    .site-footer {
+      width: min(100% - 2rem, 920px);
+      margin-inline: auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.75rem;
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 750;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin: 0 auto;
+      font-size: clamp(2.1rem, 6vw, 4.2rem);
+      letter-spacing: -0.055em;
+      line-height: 1.08;
+    }
+
+    .header-copy {
+      max-width: 590px;
+      margin: 1.25rem auto 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.2vw, 1.15rem);
+    }
+
+    main {
+      padding-block: 2rem 4rem;
+    }
+
+    .ad-slot {
+      display: grid;
+      min-height: 110px;
+      margin: 0 auto 2.25rem;
+      place-items: center;
+      border: 1px dashed rgba(190, 211, 243, 0.18);
+      border-radius: 14px;
+      background: rgba(17, 26, 46, 0.42);
+    }
+
+    .article {
+      max-width: var(--measure);
+      margin-inline: auto;
+    }
+
+    .article-heading {
+      margin-bottom: 2rem;
+    }
+
+    .article-heading h2 {
+      margin-bottom: 0.8rem;
+      font-size: clamp(1.8rem, 4.5vw, 2.7rem);
+      letter-spacing: -0.04em;
+      line-height: 1.16;
+    }
+
+    .article-meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .article p {
+      margin-bottom: 1.25rem;
+      color: #d4deef;
+      font-size: 1.06rem;
+    }
+
+    .article h3 {
+      margin: 2.25rem 0 0.75rem;
+      color: var(--text);
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      line-height: 1.35;
+    }
+
+    .article strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .article blockquote {
+      margin: 1.75rem 0;
+      padding: 0.25rem 0 0.25rem 1.25rem;
+      border-left: 3px solid var(--accent-strong);
+      color: #e0ebfa;
+      font-size: 1.16rem;
+      font-weight: 600;
+    }
+
+    .article .ad-slot {
+      margin-block: 2rem;
+    }
+
+    .download-card {
+      max-width: var(--measure);
+      margin: 2.5rem auto 0;
+      padding: clamp(1.5rem, 5vw, 2.5rem);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(23, 35, 59, 0.98), rgba(17, 26, 46, 0.92));
+      text-align: center;
+    }
+
+    .download-card h2 {
+      margin-bottom: 0.5rem;
+      font-size: clamp(1.35rem, 3vw, 1.8rem);
+      letter-spacing: -0.03em;
+    }
+
+    .download-card p {
+      max-width: 470px;
+      margin: 0 auto 1.4rem;
+      color: var(--muted);
+    }
+
+    .download-button {
+      display: inline-flex;
+      min-height: 54px;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      padding: 0.85rem 1.35rem;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #092019;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      line-height: 1.3;
+      text-decoration: none;
+      transition: background-color 160ms ease, transform 160ms ease;
+    }
+
+    .download-button:hover {
+      transform: translateY(-2px);
+      background: #a6f8df;
+    }
+
+    .download-button:focus-visible {
+      outline: 3px solid #fff;
+      outline-offset: 4px;
+    }
+
+    .site-footer {
+      padding-block: 1.5rem 2rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .header-inner,
+      main,
+      .site-footer {
+        width: min(100% - 1.25rem, 920px);
+      }
+
+      .ad-slot {
+        min-height: 90px;
+        margin-bottom: 1.75rem;
+      }
+
+      .article p {
+        font-size: 1rem;
+      }
+
+      .download-button {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      :root {
+        color-scheme: light;
+      }
+
+      body {
+        background: #fff;
+        color: #172033;
+        font: 11pt/1.6 Georgia, "Times New Roman", serif;
+      }
+
+      .site-header {
+        padding: 1rem 0 1.5rem;
+        border-color: #bbb;
+      }
+
+      .header-inner,
+      main,
+      .site-footer {
+        width: 100%;
+      }
+
+      .eyebrow,
+      .header-copy,
+      .article-meta,
+      .article p,
+      .site-footer {
+        color: #38445a;
+      }
+
+      h1,
+      .article h2,
+      .article h3,
+      .article strong {
+        color: #172033;
+      }
+
+      .ad-slot,
+      .download-card {
+        display: none;
+      }
+
+      .article {
+        max-width: none;
+      }
+
+      .article h3 {
+        break-after: avoid;
+      }
+
+      .article p {
+        orphans: 3;
+        widows: 3;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <p class="eyebrow">Ideas para entender lo que viene</p>
+      <h1>Portal de Lecturas de Josías Peralta</h1>
+      <p class="header-copy">Tecnología, redes y nuevas formas de construir un internet conectado con el mundo real.</p>
+    </div>
+  </header>
+
+  <main>
+    <aside class="ad-slot" aria-label="Espacio reservado para publicidad">
+      <!-- AQUÍ VA EL CÓDIGO DE ANUNCIO DE GOOGLE ADSENSE (BANNER CPM) -->
+    </aside>
+
+    <article class="article">
+      <header class="article-heading">
+        <p class="eyebrow">Web3 · DePIN · 8 min de lectura</p>
+        <h2>DePIN: cuando internet sale al mundo real</h2>
+        <p class="article-meta">Una introducción a las redes físicas descentralizadas y a las personas que las hacen posibles.</p>
+      </header>
+
+      <p>Durante años, gran parte de la conversación sobre Web3 se concentró en activos digitales, contratos inteligentes y mundos que existen dentro de una pantalla. Pero hay una pregunta más concreta que está ganando terreno: ¿y si una red digital pudiera coordinar infraestructura que usamos todos los días, desde antenas y sensores hasta almacenamiento y energía?</p>
+
+      <p>De esa idea nace <strong>DePIN</strong>, sigla en inglés de redes de infraestructura física descentralizadas. En lugar de depender de una sola compañía para desplegar cada equipo, una red DePIN puede coordinar dispositivos aportados por muchas personas y organizaciones. El software registra las contribuciones y las reglas de la red determinan cómo se reconocen.</p>
+
+      <h3>Una red no empieza en la nube</h3>
+      <p>Imagina que una ciudad necesita más cobertura inalámbrica en sus barrios. El modelo tradicional suele concentrar la inversión y las decisiones en unos pocos operadores. En un diseño DePIN, distintos participantes podrían instalar puntos de acceso compatibles y ofrecer cobertura. La red necesita verificar que esos equipos existen, funcionan y prestan un servicio útil; no basta con conectar un aparato y declarar que todo está en marcha.</p>
+
+      <p>Ese detalle es fundamental. Una red física tiene costos, mantenimiento, límites geográficos y condiciones cambiantes. Por eso los proyectos serios combinan dispositivos, mecanismos de verificación y coordinación digital. La cadena de bloques puede ayudar a mantener reglas compartidas y registros públicos, pero no reemplaza la ingeniería ni convierte automáticamente una infraestructura mediocre en una buena.</p>
+
+      <h3>¿Qué aporta la descentralización?</h3>
+      <p>La promesa principal es abrir la participación. En vez de que una entidad financie y controle cada pieza, muchas personas pueden aportar recursos y recibir una compensación definida por el protocolo. Esto podría acelerar la expansión de servicios en lugares donde una instalación centralizada resulta lenta o demasiado costosa.</p>
+
+      <p>También puede cambiar quién toma decisiones. Si las reglas son transparentes y la comunidad participa en su evolución, los usuarios y operadores pueden tener más visibilidad sobre el funcionamiento de la red. Esa posibilidad no garantiza que el poder quede bien distribuido: la concentración de tokens, de equipos especializados o de acceso a clientes puede recrear jerarquías conocidas con una apariencia distinta.</p>
+
+      <aside class="ad-slot" aria-label="Espacio reservado para publicidad">
+        <!-- AQUÍ VA EL CÓDIGO DE ANUNCIO DE GOOGLE ADSENSE (BANNER CPM) -->
+      </aside>
+
+      <h3>Los incentivos son el motor, no el destino</h3>
+      <p>Muchos proyectos DePIN usan incentivos digitales para atraer a quienes instalan o mantienen infraestructura. Al principio, esos incentivos pueden ayudar a coordinar una comunidad que todavía es pequeña. Sin embargo, el indicador de éxito no debería ser únicamente el precio de un token o el número de dispositivos registrados: importa que exista demanda real y que el servicio sea fiable.</p>
+
+      <blockquote>La pregunta más útil no es cuántos equipos se conectaron, sino cuántas personas obtuvieron un servicio valioso gracias a ellos.</blockquote>
+
+      <p>Un sistema sostenible debe equilibrar lo que paga a sus colaboradores con los ingresos que genera por ofrecer servicios. Si la única razón para participar es una recompensa temporal, la actividad puede desaparecer cuando cambien las condiciones del mercado. En cambio, si clientes reales necesitan la cobertura, los datos o el almacenamiento, la red tiene una base más sólida para crecer.</p>
+
+      <h3>De la teoría a los casos de uso</h3>
+      <p>Las categorías más conocidas incluyen conectividad inalámbrica, redes de sensores, almacenamiento distribuido, cómputo y sistemas relacionados con energía. Cada caso tiene desafíos distintos. Una red de sensores debe cuidar la calidad y procedencia de sus datos; una red de almacenamiento necesita demostrar que los archivos permanecen disponibles; una red de cómputo debe medir con claridad el trabajo entregado.</p>
+
+      <p>En todos ellos, la parte física impone preguntas que no se resuelven solo con código: ¿quién instala los equipos?, ¿cómo se reparan?, ¿qué pasa si se corta la conexión?, ¿cómo se protege la privacidad? La descentralización puede repartir responsabilidades, pero también exige buenos estándares, herramientas de operación y una experiencia sencilla para quienes usan el servicio.</p>
+
+      <h3>Cómo evaluar un proyecto DePIN</h3>
+      <p>Antes de dejarse llevar por una presentación atractiva, conviene revisar algunas señales concretas. Primero, identifica quién utiliza el servicio y qué problema resuelve. Después, averigua cómo verifica la red que la infraestructura funciona y qué métricas publica. También es importante entender de dónde provienen los ingresos, quién puede cambiar las reglas y cuánto depende el proyecto de recompensas subsidiadas.</p>
+
+      <p>Por último, observa la distribución de la operación. Si unas pocas entidades controlan todos los equipos importantes o los puntos de acceso a clientes, la descentralización quizá sea más limitada de lo que sugiere el nombre. No existe una fórmula única: la evaluación depende del tipo de infraestructura, de su etapa de desarrollo y de las necesidades de cada comunidad.</p>
+
+      <h3>Una oportunidad que se construye con paciencia</h3>
+      <p>DePIN conecta dos mundos que suelen avanzar a ritmos distintos. El software puede actualizarse en minutos; desplegar y mantener equipos en una ciudad o una región puede tomar meses. Esa diferencia obliga a pensar más allá de los anuncios y a medir resultados en el terreno: cobertura efectiva, calidad constante, costos razonables y utilidad para las personas.</p>
+
+      <p>Si logra combinar participación abierta con servicios confiables, DePIN podría ampliar quién construye la infraestructura digital y dónde llega. Su futuro no depende de una sola tecnología, sino de resolver problemas cotidianos mejor que las alternativas. Y esa es, al final, la prueba que cualquier red —descentralizada o no— debe superar.</p>
+    </article>
+
+    <aside class="ad-slot" aria-label="Espacio reservado para publicidad">
+      <!-- AQUÍ VA EL CÓDIGO DE ANUNCIO DE GOOGLE ADSENSE (BANNER CPM) -->
+    </aside>
+
+    <section class="download-card" aria-labelledby="download-title">
+      <h2 id="download-title">Lleva esta guía contigo</h2>
+      <p>Abre el diálogo de impresión y selecciona “Guardar como PDF” para descargar una copia limpia del artículo.</p>
+      <button class="download-button" type="button" onclick="window.print()">
+        <span aria-hidden="true">↓</span>
+        Descargar la Guía Completa en PDF
+      </button>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Portal de Lecturas de Josías Peralta · Contenido educativo sobre tecnología.</p>
+  </footer>
+</body>
+</html>

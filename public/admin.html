@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#09111f">
+  <title>Administración · JP-Ads</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #09111f; color: #edf3ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    main { width: min(1180px, calc(100% - 2rem)); margin: 3rem auto; }
+    h1, h2, h3, p { margin-top: 0; }
+    .muted, small { color: #9eacc2; }
+    .card { padding: 1.25rem; border: 1px solid #25334a; border-radius: 16px; background: #111d30; }
+    .login { width: min(440px, 100%); margin: 12vh auto; }
+    label { display: block; margin: 1rem 0 .4rem; font-weight: 650; }
+    input, button { min-height: 44px; border-radius: 9px; font: inherit; }
+    input { width: 100%; padding: .7rem; border: 1px solid #35445d; background: #09111f; color: inherit; }
+    button { padding: .6rem .85rem; border: 1px solid #41526d; background: #1b2a40; color: inherit; cursor: pointer; font-weight: 700; }
+    button:hover { border-color: #83e6ae; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .primary { border-color: #67d998; background: #153c31; }
+    .danger { border-color: #8c4955; background: #3a202b; }
+    .toolbar, .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+    .toolbar { justify-content: space-between; margin-bottom: 1.3rem; }
+    .toolbar h1 { margin: 0; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .8rem; margin-bottom: 1.5rem; }
+    .stat-label { margin-bottom: .4rem; color: #9eacc2; font-size: .82rem; }
+    .stat-value { margin: 0; color: #79efa8; font-size: 1.65rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .section { margin: 1.2rem 0; }
+    .campaigns { display: grid; gap: .8rem; }
+    .campaign { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 1rem; align-items: start; }
+    .banner { display: block; width: 100%; aspect-ratio: 6 / 5; object-fit: contain; border-radius: 9px; background: #08101d; }
+    .campaign h3 { margin-bottom: .25rem; overflow-wrap: anywhere; }
+    .meta { margin: .25rem 0; color: #aab8cc; font-size: .84rem; overflow-wrap: anywhere; }
+    .badge { display: inline-block; margin: .3rem .35rem .55rem 0; padding: .2rem .5rem; border: 1px solid #40516b; border-radius: 999px; color: #c8d4e6; font-size: .72rem; }
+    .error { min-height: 1.4em; margin: .8rem 0 0; color: #ff9d9d; }
+    .positive { color: #79efa8; }
+    .empty { padding: 1rem; color: #aab8cc; }
+    @media (max-width: 620px) { main { margin: 1.25rem auto; } .campaign { grid-template-columns: 1fr; } .banner { max-width: 300px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card login" id="login-panel" hidden>
+      <p class="muted">JP-Ads · Área privada</p>
+      <h1>Administración</h1>
+      <p class="muted">Acceso protegido por una clave configurada únicamente en el entorno del servidor.</p>
+      <form id="login-form">
+        <label for="admin-password">Clave administrativa</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+        <div class="actions" style="margin-top:1rem"><button class="primary" type="submit">Iniciar sesión</button></div>
+      </form>
+      <p class="error" id="login-error" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="dashboard" hidden>
+      <header class="toolbar">
+        <div><p class="muted">JP-Ads · control administrativo</p><h1>Red y campañas</h1></div>
+        <div class="actions"><button id="refresh-button" type="button">Actualizar</button><button id="logout-button" type="button">Cerrar sesión</button></div>
+      </header>
+      <section class="stats" aria-label="Balance global">
+        <article class="card"><p class="stat-label">Pagos liquidados</p><p class="stat-value" id="paid-total">$0.00</p><small id="transaction-count">0 transacciones completadas</small></article>
+        <article class="card"><p class="stat-label">Impresiones editoriales válidas</p><p class="stat-value" id="impression-total">0</p></article>
+        <article class="card"><p class="stat-label">Saldo acumulado de editores</p><p class="stat-value" id="editor-total">$0.00</p></article>
+        <article class="card"><p class="stat-label">Comisión bruta del dueño</p><p class="stat-value" id="owner-total">$0.00</p><small>Antes de tarifas externas de pago</small></article>
+      </section>
+      <section class="card section">
+        <h2>Extracto global reciente</h2>
+        <div id="transactions" class="campaigns" aria-live="polite"></div>
+      </section>
+      <section class="card section">
+        <h2>Todas las campañas</h2>
+        <p class="muted">Aprobar, pausar o archivar una campaña no modifica el estado de pago. Solo webhooks de pasarela verificados liquidan pagos.</p>
+        <div id="campaigns" class="campaigns" aria-live="polite"></div>
+      </section>
+      <p class="error" id="dashboard-error" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script>
+    const loginPanel = document.querySelector("#login-panel");
+    const loginForm = document.querySelector("#login-form");
+    const loginError = document.querySelector("#login-error");
+    const dashboard = document.querySelector("#dashboard");
+    const dashboardError = document.querySelector("#dashboard-error");
+    const money = new Intl.NumberFormat("es-PY", { style: "currency", currency: "USD" });
+
+    async function api(url, options = {}) {
+      const response = await fetch(url, {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}), ...options.headers },
+        ...options
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Error de comunicación con el servidor.");
+      return result;
+    }
+
+    function showLogin(message = "") {
+      dashboard.hidden = true;
+      loginPanel.hidden = false;
+      loginError.textContent = message;
+    }
+
+    function appendText(parent, tag, text, className = "") {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      parent.append(element);
+      return element;
+    }
+
+    async function loadDashboard() {
+      dashboardError.textContent = "";
+      try {
+        const data = await api("/api/admin/overview");
+        loginPanel.hidden = true;
+        dashboard.hidden = false;
+        document.querySelector("#paid-total").textContent = money.format(data.totalPaidUsdCents / 100);
+        document.querySelector("#transaction-count").textContent = `${data.completedTransactions} transacciones completadas`;
+        document.querySelector("#impression-total").textContent = Number(data.validImpressions).toLocaleString("es-PY");
+        document.querySelector("#editor-total").textContent = money.format(data.editorEarningsMicroUsd / 1000000);
+        document.querySelector("#owner-total").textContent = money.format(data.ownerCommissionMicroUsd / 1000000);
+        renderTransactions(data.transactions);
+        renderCampaigns(data.campaigns);
+      } catch (error) {
+        if (error.message.includes("Inicia sesión") || error.message.includes("venció")) {
+          showLogin();
+          return;
+        }
+        dashboardError.textContent = error.message;
+      }
+    }
+
+    function renderTransactions(transactions) {
+      const list = document.querySelector("#transactions");
+      list.replaceChildren();
+      if (!transactions.length) return appendText(list, "p", "Todavía no hay pagos registrados.", "empty");
+      for (const transaction of transactions) {
+        const row = document.createElement("article");
+        row.className = "card";
+        appendText(row, "strong", `${transaction.usuario} · ${money.format(transaction.monto_usd_centavos / 100)}`);
+        appendText(row, "p", `${transaction.metodo} · ${transaction.estado} · ${transaction.pagado_en || "Sin liquidar"}`, "meta");
+        list.append(row);
+      }
+    }
+
+    function renderCampaigns(campaigns) {
+      const list = document.querySelector("#campaigns");
+      list.replaceChildren();
+      if (!campaigns.length) return appendText(list, "p", "No hay campañas registradas.", "empty");
+      for (const campaign of campaigns) {
+        const card = document.createElement("article");
+        card.className = "card campaign";
+        const image = document.createElement("img");
+        image.className = "banner";
+        image.src = campaign.bannerUrl;
+        image.alt = `Banner: ${campaign.title}`;
+        image.loading = "lazy";
+        const detail = document.createElement("div");
+        appendText(detail, "h3", `#${campaign.id} · ${campaign.title}`);
+        appendText(detail, "p", `${campaign.advertiser} · ${campaign.ownerEmail || "Sin propietario"}`, "meta");
+        appendText(detail, "p", `${money.format(campaign.amountUsdCents / 100)} · ${Number(campaign.impressionsConsumed).toLocaleString("es-PY")} / ${Number(campaign.impressionsPurchased).toLocaleString("es-PY")} impresiones`, "meta");
+        appendText(detail, "span", `Pago: ${campaign.paymentStatus}`, "badge");
+        appendText(detail, "span", `Moderación: ${campaign.moderationStatus}`, "badge");
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        for (const [action, label, className] of [
+          ["approve", "🟢 Aprobar", "primary"],
+          ["pause", "⏸️ Pausar", ""],
+          ["delete", "🗑️ Archivar", "danger"]
+        ]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = label;
+          if (className) button.className = className;
+          button.disabled = campaign.moderationStatus === "eliminada";
+          button.addEventListener("click", () => moderateCampaign(campaign.id, action, button));
+          actions.append(button);
+        }
+        detail.append(actions);
+        card.append(image, detail);
+        list.append(card);
+      }
+    }
+
+    async function moderateCampaign(id, action, button) {
+      button.disabled = true;
+      try {
+        await api(`/api/admin/campaigns/${id}/moderation`, { method: "POST", body: JSON.stringify({ action }) });
+        await loadDashboard();
+      } catch (error) {
+        dashboardError.textContent = error.message;
+        button.disabled = false;
+      }
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const password = document.querySelector("#admin-password");
+      try {
+        await api("/api/admin/login", { method: "POST", body: JSON.stringify({ password: password.value }) });
+        password.value = "";
+        await loadDashboard();
+      } catch (error) {
+        loginError.textContent = error.message;
+      }
+    });
+
+    document.querySelector("#refresh-button").addEventListener("click", loadDashboard);
+    document.querySelector("#logout-button").addEventListener("click", async () => {
+      try {
+        await api("/api/admin/logout", { method: "POST" });
+        showLogin();
+      } catch (error) {
+        dashboardError.textContent = error.message;
+      }
+    });
+
+    loadDashboard();
+  </script>
+</body>
+</html>

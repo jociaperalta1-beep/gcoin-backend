@@ -11,6 +11,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const DATABASE_PATH = process.env.DB_PATH || './gcoin_guarani.db';
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_temporal_muy_larga_de_prueba_2026';
+const PUBLIC_APP_URL = (process.env.PUBLIC_APP_URL || 'https://gcoin.depinguarani.com').replace(/\/+$/, '');
 const REFERRAL_BONUS = 1000;
 const POINTS_PER_MINUTE = 7.64;
 const DAILY_POINTS_LIMIT = 11000;
@@ -19,6 +20,7 @@ const MAX_HEARTBEAT_GAP_MS = 2 * HEARTBEAT_INTERVAL_MS;
 const POINTS_CYCLE_MS = 24 * 60 * 60 * 1000;
 const ROULETTE_SPIN_LIMIT = 15;
 const WITHDRAWAL_MINIMUM_MICRO_USD = 5_000_000;
+const PASSWORD_RESET_TTL_MS = 30 * 60 * 1000;
 const USD_PER_DEPIN_POINT = parseUsdPerPoint(process.env.USD_PER_DEPIN_POINT);
 const SMTP_TRANSPORT = createSmtpTransport();
 const ROULETTE_PRIZES = [
@@ -38,6 +40,11 @@ const GEM_MILESTONES = [
 const JWT_ISSUER = 'gcoin-guarani';
 const JWT_AUDIENCE = 'gcoin-api';
 const scrypt = promisify(crypto.scrypt);
+const normalizeEmail = (email) => email.trim().toLowerCase();
+const isValidEmail = (email) =>
+  typeof email === 'string' &&
+  email.length <= 254 &&
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 function parseUsdPerPoint(value) {
   if (value === undefined || value === '') {
@@ -307,6 +314,8 @@ const initializeDatabase = async () => {
   await ensureColumn('users', 'gems_balance', 'INTEGER NOT NULL DEFAULT 0');
   await ensureColumn('users', 'payout_wallet_address', 'TEXT');
   await ensureColumn('users', 'payout_balance_microusd', 'INTEGER NOT NULL DEFAULT 0');
+  await ensureColumn('users', 'email', 'TEXT');
+  await run('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users(email COLLATE NOCASE) WHERE email IS NOT NULL');
 
   await run(`CREATE TABLE IF NOT EXISTS nodes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -343,6 +352,15 @@ const initializeDatabase = async () => {
     UNIQUE (user_id, request_id)
   )`);
   await run('CREATE INDEX IF NOT EXISTS idx_roulette_spins_cycle ON roulette_spins(user_id, cycle_started_at)');
+  await run(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    used_at TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run('CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, used_at)');
   await run(`CREATE TABLE IF NOT EXISTS withdrawal_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -376,19 +394,26 @@ app.get('/', (req, res) => {
 });
 
 app.post('/register', asyncHandler(async (req, res) => {
-  const { username, password, referredBy } = req.body || {};
+  const { username, password, email, referredBy } = req.body || {};
   if (
     typeof username !== 'string' ||
     !username.trim() ||
     username.trim().length > 64 ||
     typeof password !== 'string' ||
     password.length < 8 ||
-    password.length > 256
+    password.length > 256 ||
+    !isValidEmail(email)
   ) {
-    throw new HttpError(400, 'El usuario debe tener hasta 64 caracteres y la contraseña entre 8 y 256 caracteres.');
+    throw new HttpError(400, 'Ingresa un usuario válido, un correo válido y una contraseña de entre 8 y 256 caracteres.');
   }
 
   const normalizedUsername = username.trim();
+  const normalizedEmail = normalizeEmail(email);
+  const existingEmail = await get('SELECT id FROM users WHERE email = ? COLLATE NOCASE', [normalizedEmail]);
+  if (existingEmail) {
+    throw new HttpError(409, 'Este correo ya está asociado a una cuenta.');
+  }
+
   let normalizedReferrer;
   if (referredBy !== undefined && referredBy !== null && referredBy !== '') {
     if (typeof referredBy !== 'string' || !referredBy.trim() || referredBy.trim().length > 64) {
@@ -416,9 +441,9 @@ app.post('/register', asyncHandler(async (req, res) => {
     const referralApplied = Boolean(referrer);
     const initialGcoins = referralApplied ? REFERRAL_BONUS : 0;
     const insert = await run(
-      `INSERT INTO users (username, password, gcoins, referred_by)
-       VALUES (?, ?, ?, ?)`,
-      [normalizedUsername, passwordHash, initialGcoins, referrer ? referrer.username : null],
+      `INSERT INTO users (username, password, email, gcoins, referred_by)
+       VALUES (?, ?, ?, ?, ?)`,
+      [normalizedUsername, passwordHash, normalizedEmail, initialGcoins, referrer ? referrer.username : null],
     );
     return {
       user: { id: insert.lastID, username: normalizedUsername },
@@ -439,6 +464,115 @@ app.post('/register', asyncHandler(async (req, res) => {
     newUserBonus: result.newUserBonus,
     referrerBonus: result.referrerBonus,
   });
+}));
+
+app.post('/forgot-password', asyncHandler(async (req, res) => {
+  const { email } = req.body || {};
+  if (!isValidEmail(email)) {
+    throw new HttpError(400, 'Ingresa un correo válido.');
+  }
+  if (!SMTP_TRANSPORT) {
+    throw new HttpError(503, 'La recuperación de contraseña no está disponible: falta configurar el correo SMTP.');
+  }
+
+  const user = await get(
+    'SELECT id, email FROM users WHERE email = ? COLLATE NOCASE',
+    [normalizeEmail(email)],
+  );
+  if (!user) {
+    return res.json({ message: 'Si existe una cuenta con ese correo, recibirá un enlace para restablecer la contraseña.' });
+  }
+  const recentRequests = await get(
+    `SELECT COUNT(*) AS count FROM password_reset_tokens
+     WHERE user_id = ? AND created_at >= datetime('now', '-1 hour')`,
+    [user.id],
+  );
+  if (Number(recentRequests.count) >= 3) {
+    return res.json({ message: 'Si existe una cuenta con ese correo, recibirá un enlace para restablecer la contraseña.' });
+  }
+
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+  const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS).toISOString();
+  await withTransaction(async () => {
+    await run(
+      'UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE user_id = ? AND used_at IS NULL',
+      [user.id],
+    );
+    await run(
+      'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+      [user.id, tokenHash, expiresAt],
+    );
+  });
+
+  const resetUrl = new URL('/', `${PUBLIC_APP_URL}/`);
+  resetUrl.hash = new URLSearchParams({ resetToken }).toString();
+  try {
+    await SMTP_TRANSPORT.sendMail({
+      from: process.env.SMTP_FROM,
+      to: user.email,
+      subject: 'Restablece tu contraseña de Gcoin Guaraní',
+      text: `Usa este enlace para crear una nueva contraseña. El enlace vence en 30 minutos y solo puede usarse una vez:\n\n${resetUrl.href}\n\nSi no solicitaste este cambio, ignora este mensaje.`,
+    });
+  } catch (error) {
+    await run(
+      'UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE token_hash = ? AND used_at IS NULL',
+      [tokenHash],
+    );
+    console.error('No se pudo enviar el correo de recuperación de contraseña:', error.message);
+    throw new HttpError(502, 'No se pudo enviar el correo de recuperación. Intenta nuevamente más tarde.');
+  }
+
+  return res.json({ message: 'Si existe una cuenta con ese correo, recibirá un enlace para restablecer la contraseña.' });
+}));
+
+app.post('/reset-password', asyncHandler(async (req, res) => {
+  const { token, password } = req.body || {};
+  if (
+    typeof token !== 'string' ||
+    !/^[a-f0-9]{64}$/i.test(token) ||
+    typeof password !== 'string' ||
+    password.length < 8 ||
+    password.length > 256
+  ) {
+    throw new HttpError(400, 'El enlace no es válido o la contraseña no cumple los requisitos.');
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const tokenRecord = await get(
+    'SELECT id, user_id, expires_at, used_at FROM password_reset_tokens WHERE token_hash = ?',
+    [tokenHash],
+  );
+  if (
+    !tokenRecord ||
+    tokenRecord.used_at ||
+    !Number.isFinite(Date.parse(tokenRecord.expires_at)) ||
+    Date.parse(tokenRecord.expires_at) <= Date.now()
+  ) {
+    throw new HttpError(400, 'El enlace de recuperación venció o ya fue utilizado. Solicita uno nuevo.');
+  }
+
+  const passwordHash = await hashPassword(password);
+  await withTransaction(async () => {
+    const activeToken = await get(
+      'SELECT id, expires_at FROM password_reset_tokens WHERE id = ? AND used_at IS NULL',
+      [tokenRecord.id],
+    );
+    if (
+      !activeToken ||
+      !Number.isFinite(Date.parse(activeToken.expires_at)) ||
+      Date.parse(activeToken.expires_at) <= Date.now()
+    ) {
+      throw new HttpError(400, 'El enlace de recuperación venció o ya fue utilizado. Solicita uno nuevo.');
+    }
+    await run('UPDATE users SET password = ? WHERE id = ?', [passwordHash, tokenRecord.user_id]);
+    await run(
+      'UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE user_id = ? AND used_at IS NULL',
+      [tokenRecord.user_id],
+    );
+  });
+
+  return res.json({ message: 'Contraseña actualizada. Ya puedes iniciar sesión.' });
 }));
 
 app.post('/login', asyncHandler(async (req, res) => {
@@ -822,6 +956,31 @@ app.get('/api/me/wallet', verificarToken, asyncHandler(async (req, res) => {
   return res.json({ walletAddress: user.payout_wallet_address || '' });
 }));
 
+app.get('/api/me/email', verificarToken, asyncHandler(async (req, res) => {
+  const user = await get('SELECT email FROM users WHERE id = ?', [req.user.id]);
+  if (!user) {
+    throw new HttpError(404, 'No se encontró la cuenta autenticada.');
+  }
+  return res.json({ email: user.email || '' });
+}));
+
+app.put('/api/me/email', verificarToken, asyncHandler(async (req, res) => {
+  const { email } = req.body || {};
+  if (!isValidEmail(email)) {
+    throw new HttpError(400, 'Ingresa un correo válido.');
+  }
+  const normalizedEmail = normalizeEmail(email);
+  const existingEmail = await get(
+    'SELECT id FROM users WHERE email = ? COLLATE NOCASE AND id != ?',
+    [normalizedEmail, req.user.id],
+  );
+  if (existingEmail) {
+    throw new HttpError(409, 'Este correo ya está asociado a otra cuenta.');
+  }
+  await run('UPDATE users SET email = ? WHERE id = ?', [normalizedEmail, req.user.id]);
+  return res.json({ success: true, email: normalizedEmail });
+}));
+
 app.put('/api/me/wallet', verificarToken, asyncHandler(async (req, res) => {
   const { walletAddress } = req.body || {};
   if (
@@ -1061,12 +1220,15 @@ app.use((err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
   }
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'El cuerpo de la solicitud no contiene JSON válido.' });
+  }
   if (err instanceof HttpError) {
     return res.status(err.status).json({ error: err.message });
   }
 
   if (err.code === 'SQLITE_CONSTRAINT') {
-    return res.status(409).json({ error: 'El usuario o nodo ya se encuentra registrado.' });
+    return res.status(409).json({ error: 'El usuario, correo o nodo ya se encuentra registrado.' });
   }
 
   console.error('Error al procesar la solicitud:', err.message);

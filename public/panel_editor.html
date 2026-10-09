@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#09111f">
+  <title>Panel de editores · JP-Ads</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #09111f; color: #edf3ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    main { width: min(1000px, calc(100% - 2rem)); margin: 2.5rem auto; }
+    h1, h2, h3, p { margin-top: 0; }
+    .muted, small { color: #9eacc2; }
+    .card { margin: 1rem 0; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid #25334a; border-radius: 16px; background: #111d30; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .8rem; }
+    .stat { padding: 1rem; border-radius: 12px; background: #0b1627; }
+    .stat strong { display: block; margin-top: .35rem; color: #79efa8; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+    label { display: block; margin: .9rem 0 .35rem; font-weight: 650; }
+    input, select, textarea, button { width: 100%; min-height: 44px; border-radius: 9px; font: inherit; }
+    input, select, textarea { padding: .7rem; border: 1px solid #35445d; background: #09111f; color: inherit; }
+    textarea { min-height: 100px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: .82rem; }
+    button { padding: .65rem .9rem; border: 1px solid #41526d; background: #1b2a40; color: inherit; cursor: pointer; font-weight: 700; }
+    button:hover { border-color: #83e6ae; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .primary { border-color: #67d998; background: #153c31; }
+    .row { display: flex; align-items: center; gap: .7rem; }
+    .row > * { flex: 1; }
+    .error { min-height: 1.4em; margin: .6rem 0 0; color: #ff9d9d; }
+    .notice { padding: .8rem; border-left: 3px solid #72dca4; background: #10251f; color: #c4d8cf; }
+    .unit { margin-top: .8rem; padding: 1rem; border: 1px solid #2d3a50; border-radius: 12px; }
+    @media (max-width: 560px) { .row { align-items: stretch; flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">JP-Ads · socios editores</p>
+    <h1>Monetiza tu sitio</h1>
+    <p class="muted">Crea bloques de anuncios, copia el código de inserción y consulta las impresiones válidas registradas.</p>
+
+    <section class="card" id="profile-setup" hidden>
+      <h2>Registra tu sitio</h2>
+      <p class="muted">Usa una cuenta JP-Ads verificada. Los anuncios se sirven solo en el origen que registres.</p>
+      <form id="profile-form">
+        <label for="site-url">URL de tu sitio web</label>
+        <input id="site-url" type="url" placeholder="https://mi-blog.example" autocomplete="url" required>
+        <button class="primary" style="margin-top:.8rem" type="submit">Crear perfil editorial</button>
+      </form>
+    </section>
+
+    <section id="editor-dashboard" hidden>
+      <section class="card">
+        <h2>Tu actividad</h2>
+        <div class="grid">
+          <div class="stat"><span class="muted">Impresiones válidas</span><strong id="impressions">0</strong></div>
+          <div class="stat"><span class="muted">Saldo acumulado</span><strong id="earnings">$0.000</strong></div>
+          <div class="stat"><span class="muted">Sitio registrado</span><strong id="site-origin" style="font-size:1rem;overflow-wrap:anywhere">—</strong></div>
+        </div>
+        <p class="notice" style="margin-top:1rem">Tarifa del editor: <strong>$1,00 USD por cada 1.000 impresiones válidas</strong>. Solo se cuenta una impresión por IP y editor cada 24 horas, al servir una campaña pagada y aprobada. El saldo es devengado; no se emiten retiros automáticamente.</p>
+      </section>
+
+      <section class="card">
+        <h2>Crear bloque de anuncios</h2>
+        <form id="ad-unit-form">
+          <label for="format">Formato del bloque</label>
+          <select id="format">
+            <option value="300x250">Bloque clásico · 300 × 250</option>
+            <option value="728x90">Leaderboard · 728 × 90</option>
+            <option value="160x600">Rascacielos · 160 × 600</option>
+          </select>
+          <button class="primary" style="margin-top:.8rem" type="submit">Generar código de inserción</button>
+        </form>
+        <p class="error" id="editor-error" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h2>Tus códigos</h2>
+        <div id="ad-units" aria-live="polite"></div>
+      </section>
+    </section>
+  </main>
+  <script>
+    const profileSetup = document.querySelector("#profile-setup");
+    const dashboard = document.querySelector("#editor-dashboard");
+    const errorMessage = document.querySelector("#editor-error");
+    const adUnits = document.querySelector("#ad-units");
+    const money = new Intl.NumberFormat("es-PY", { style: "currency", currency: "USD", minimumFractionDigits: 3, maximumFractionDigits: 6 });
+
+    async function api(url, options = {}) {
+      const response = await fetch(url, {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}) },
+        ...options
+      });
+      if (response.status === 401) {
+        window.location.replace("/registro.html?next=%2Fpanel_editor.html");
+        throw new Error("Inicia sesión con una cuenta verificada.");
+      }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "No se pudo completar la operación.");
+      return data;
+    }
+
+    function renderUnits(units) {
+      adUnits.replaceChildren();
+      if (!units.length) {
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent = "Aún no has generado bloques de anuncios.";
+        adUnits.append(empty);
+        return;
+      }
+      for (const unit of units) {
+        const panel = document.createElement("article");
+        panel.className = "unit";
+        const title = document.createElement("h3");
+        title.textContent = `${unit.format} · ${unit.id}`;
+        const code = document.createElement("textarea");
+        code.readOnly = true;
+        code.setAttribute("aria-label", `Código de inserción ${unit.id}`);
+        code.value = unit.embedCode;
+        const copy = document.createElement("button");
+        copy.type = "button";
+        copy.textContent = "Copiar código";
+        copy.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(code.value);
+            copy.textContent = "Copiado";
+            setTimeout(() => { copy.textContent = "Copiar código"; }, 1800);
+          } catch {
+            code.focus();
+            code.select();
+            copy.textContent = "Código seleccionado";
+          }
+        });
+        panel.append(title, code, copy);
+        adUnits.append(panel);
+      }
+    }
+
+    async function loadDashboard() {
+      const data = await api("/api/publishers/dashboard");
+      if (!data.profile) {
+        profileSetup.hidden = false;
+        dashboard.hidden = true;
+        return;
+      }
+      profileSetup.hidden = true;
+      dashboard.hidden = false;
+      document.querySelector("#impressions").textContent = Number(data.validImpressions).toLocaleString("es-PY");
+      document.querySelector("#earnings").textContent = money.format(Number(data.earningsMicroUsd) / 1000000);
+      document.querySelector("#site-origin").textContent = data.profile.site_origin;
+      renderUnits(data.adUnits);
+    }
+
+    document.querySelector("#profile-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      errorMessage.textContent = "";
+      try {
+        await api("/api/publishers/profile", {
+          method: "POST",
+          body: JSON.stringify({ siteUrl: document.querySelector("#site-url").value })
+        });
+        await loadDashboard();
+      } catch (error) {
+        errorMessage.textContent = error.message;
+      }
+    });
+
+    document.querySelector("#ad-unit-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      errorMessage.textContent = "";
+      try {
+        await api("/api/publishers/ad-units", {
+          method: "POST",
+          body: JSON.stringify({ format: document.querySelector("#format").value })
+        });
+        await loadDashboard();
+      } catch (error) {
+        errorMessage.textContent = error.message;
+      }
+    });
+
+    loadDashboard().catch((error) => {
+      errorMessage.textContent = error.message;
+    });
+  </script>
+</body>
+</html>

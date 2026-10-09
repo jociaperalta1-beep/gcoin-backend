@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090e1b">
+  <meta name="description" content="Accede o crea tu cuenta de anunciante en JP-Ads.">
+  <title>Acceso de anunciantes | JP-Ads</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #090e1b;
+      --surface: #111a2d;
+      --surface-soft: #151f35;
+      --text: #f2f5fc;
+      --muted: #a0aec5;
+      --accent: #8cf0d0;
+      --accent-hover: #a8f7df;
+      --border: rgba(183, 202, 233, 0.14);
+      --danger: #ff9d9d;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      min-width: 320px;
+      min-height: 100vh;
+      flex-direction: column;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 14% 0%, rgba(48, 91, 139, 0.24), transparent 34rem),
+        var(--page);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .topbar {
+      display: flex;
+      min-height: 74px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-inline: clamp(1rem, 5vw, 4rem);
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 14, 27, 0.7);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 850;
+      letter-spacing: -0.04em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #092019;
+      font-size: 0.85rem;
+      letter-spacing: -0.08em;
+    }
+
+    .topbar-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    main {
+      display: grid;
+      width: min(100% - 2rem, 470px);
+      flex: 1;
+      align-content: center;
+      margin-inline: auto;
+      padding-block: 3rem;
+    }
+
+    .auth-card {
+      padding: clamp(1.4rem, 5vw, 2.25rem);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: linear-gradient(150deg, rgba(21, 31, 53, 0.98), rgba(17, 26, 45, 0.97));
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.27);
+    }
+
+    .eyebrow {
+      margin: 0 0 0.65rem;
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 0.55rem;
+      font-size: clamp(1.8rem, 6vw, 2.2rem);
+      letter-spacing: -0.05em;
+      line-height: 1.15;
+    }
+
+    .intro {
+      margin-bottom: 1.7rem;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem;
+      margin-bottom: 1.5rem;
+      padding: 0.3rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(7, 12, 24, 0.56);
+    }
+
+    .mode-button {
+      min-height: 40px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 750;
+    }
+
+    .mode-button[aria-pressed="true"] {
+      background: var(--surface-soft);
+      color: var(--text);
+      box-shadow: 0 2px 9px rgba(0, 0, 0, 0.2);
+    }
+
+    .fields {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .field label {
+      color: #e1e8f5;
+      font-size: 0.87rem;
+      font-weight: 700;
+    }
+
+    .control {
+      width: 100%;
+      min-height: 49px;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid rgba(183, 202, 233, 0.18);
+      border-radius: 11px;
+      outline: none;
+      background: rgba(7, 12, 24, 0.58);
+      color: var(--text);
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .control::placeholder {
+      color: #73819a;
+    }
+
+    .control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(140, 240, 208, 0.13);
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap .control {
+      padding-right: 3.3rem;
+    }
+
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 0.45rem;
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+    .password-toggle:hover {
+      background: rgba(183, 202, 233, 0.08);
+      color: var(--text);
+    }
+
+    .password-toggle:focus-visible,
+    .mode-button:focus-visible,
+    .text-button:focus-visible,
+    .primary-button:focus-visible,
+    .google-fallback:focus-visible,
+    .dialog-close:focus-visible {
+      outline: 3px solid rgba(140, 240, 208, 0.75);
+      outline-offset: 2px;
+    }
+
+    .password-toggle svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.7;
+    }
+
+    .confirm-field[hidden] {
+      display: none;
+    }
+
+    .primary-button {
+      display: inline-flex;
+      width: 100%;
+      min-height: 49px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1.35rem;
+      padding: 0.75rem 1rem;
+      border: 0;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #082018;
+      cursor: pointer;
+      font-weight: 850;
+      transition: background-color 150ms ease, transform 150ms ease;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-1px);
+      background: var(--accent-hover);
+    }
+
+    .separator {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-block: 1.35rem;
+      color: #8492aa;
+      font-size: 0.75rem;
+    }
+
+    .separator::before,
+    .separator::after {
+      height: 1px;
+      flex: 1;
+      background: var(--border);
+      content: "";
+    }
+
+    .google-area {
+      display: grid;
+      min-height: 44px;
+      place-items: center;
+    }
+
+    .google-fallback {
+      display: inline-flex;
+      width: 100%;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+      padding: 0.65rem 1rem;
+      border: 1px solid rgba(183, 202, 233, 0.24);
+      border-radius: 10px;
+      background: #fff;
+      color: #202124;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .google-fallback:hover {
+      background: #f4f6f8;
+    }
+
+    .google-fallback[hidden] {
+      display: none;
+    }
+
+    .google-fallback svg {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 auto;
+    }
+
+    .status-message {
+      min-height: 1.45em;
+      margin: 0.8rem 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .status-message.is-error {
+      color: var(--danger);
+    }
+
+    .account-help {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.3rem;
+      margin: 1.4rem 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    .text-button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .text-button:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .forgot-link {
+      display: block;
+      margin: 1rem auto 0;
+      font-size: 0.83rem;
+    }
+
+    .site-footer {
+      padding: 1rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .site-footer p {
+      margin: 0;
+    }
+
+    dialog {
+      width: min(100% - 2rem, 430px);
+      max-width: none;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 19px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.58);
+    }
+
+    dialog::backdrop {
+      background: rgba(3, 7, 15, 0.76);
+      backdrop-filter: blur(5px);
+    }
+
+    .dialog-content {
+      padding: clamp(1.35rem, 5vw, 1.8rem);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .dialog-header h2 {
+      margin-bottom: 0.4rem;
+      font-size: 1.35rem;
+      letter-spacing: -0.035em;
+    }
+
+    .dialog-header p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .dialog-close {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .dialog-content .primary-button {
+      margin-top: 1.1rem;
+    }
+
+    .verification-panel[hidden],
+    .auth-panel[hidden] {
+      display: none;
+    }
+
+    .verification-panel {
+      text-align: center;
+    }
+
+    .verification-icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 1.2rem;
+      place-items: center;
+      border: 1px solid rgba(140, 240, 208, 0.28);
+      border-radius: 17px;
+      background: rgba(140, 240, 208, 0.09);
+      color: var(--accent);
+    }
+
+    .verification-icon svg {
+      width: 27px;
+      height: 27px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.7;
+    }
+
+    .verification-panel h1 {
+      font-size: clamp(1.7rem, 5vw, 2rem);
+    }
+
+    .verification-copy {
+      margin-bottom: 1.35rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .verification-email {
+      display: inline-block;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      color: var(--text);
+      font-weight: 750;
+    }
+
+    .code-inputs {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: clamp(0.4rem, 2vw, 0.7rem);
+      margin-block: 1.4rem 0.8rem;
+    }
+
+    .code-input {
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 1;
+      padding: 0.2rem;
+      border: 1px solid rgba(183, 202, 233, 0.22);
+      border-radius: 12px;
+      outline: none;
+      background: rgba(7, 12, 24, 0.58);
+      color: var(--text);
+      font-size: clamp(1.25rem, 5vw, 1.65rem);
+      font-weight: 800;
+      text-align: center;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .code-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(140, 240, 208, 0.13);
+    }
+
+    .code-input:disabled {
+      opacity: 0.55;
+    }
+
+    .development-code {
+      margin: 0.75rem 0 0;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid rgba(255, 198, 116, 0.25);
+      border-radius: 10px;
+      background: rgba(255, 198, 116, 0.07);
+      color: #ffd28d;
+      font-size: 0.8rem;
+    }
+
+    .development-code[hidden] {
+      display: none;
+    }
+
+    .resend-copy {
+      margin: 1rem 0 0;
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .resend-button:disabled {
+      color: var(--muted);
+      cursor: not-allowed;
+      text-decoration: none;
+    }
+
+    .verification-success[hidden] {
+      display: none;
+    }
+
+    .verification-success {
+      padding: 1rem;
+      border: 1px solid rgba(140, 240, 208, 0.24);
+      border-radius: 13px;
+      background: rgba(140, 240, 208, 0.07);
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 420px) {
+      .topbar {
+        min-height: 64px;
+      }
+
+      .topbar-note {
+        font-size: 0.76rem;
+      }
+
+      main {
+        width: min(100% - 1.25rem, 470px);
+        padding-block: 1.5rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="panel_anunciante.html" aria-label="JP-Ads, ir al panel">
+      <span class="brand-mark" aria-hidden="true">JP</span>
+      <span>JP-Ads</span>
+    </a>
+    <span class="topbar-note">Acceso seguro para anunciantes</span>
+  </header>
+
+  <main>
+    <section class="auth-card" aria-labelledby="page-title">
+      <div class="auth-panel" id="auth-panel">
+      <p class="eyebrow">Tu espacio publicitario</p>
+      <h1 id="page-title">Qué bueno verte</h1>
+      <p class="intro" id="form-intro">Inicia sesión para administrar tus campañas.</p>
+
+      <div class="mode-switch" role="group" aria-label="Tipo de acceso">
+        <button class="mode-button" id="login-mode" type="button" aria-pressed="true">Iniciar sesión</button>
+        <button class="mode-button" id="register-mode" type="button" aria-pressed="false">Crear cuenta</button>
+      </div>
+
+      <form id="auth-form" novalidate>
+        <div class="fields">
+          <div class="field">
+            <label for="email">Correo electrónico</label>
+            <input class="control" id="email" name="email" type="email" placeholder="tu@empresa.com" autocomplete="email" maxlength="254" required>
+          </div>
+
+          <div class="field">
+            <label for="password">Contraseña</label>
+            <div class="password-wrap">
+              <input class="control" id="password" name="password" type="password" placeholder="Escribe tu contraseña" autocomplete="current-password" minlength="8" maxlength="128" required>
+              <button class="password-toggle" id="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="field confirm-field" id="confirm-field" hidden>
+            <label for="confirm-password">Confirmar contraseña</label>
+            <input class="control" id="confirm-password" name="confirmPassword" type="password" placeholder="Vuelve a escribir tu contraseña" autocomplete="new-password" minlength="8" maxlength="128" disabled>
+          </div>
+        </div>
+
+        <button class="primary-button" id="submit-button" type="submit">Iniciar sesión</button>
+        <p class="status-message" id="auth-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="separator" aria-hidden="true">o continúa con</div>
+      <div class="google-area">
+        <div id="google-button-container" aria-label="Acceso con Google"></div>
+        <button class="google-fallback" id="google-fallback" type="button">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.6c3.9-3.6 6.1-8.8 6.1-15Z"/>
+            <path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.6-5.1c-1.8 1.2-4.1 2-6.9 2-5.3 0-9.8-3.6-11.4-8.4H5.8v5.3A20 20 0 0 0 24 44Z"/>
+            <path fill="#FBBC05" d="M12.6 27.6a12 12 0 0 1 0-7.2v-5.3H5.8a20 20 0 0 0 0 17.8l6.8-5.3Z"/>
+            <path fill="#EA4335" d="M24 12c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 5.8 29.5 4 24 4A20 20 0 0 0 5.8 15.1l6.8 5.3C14.2 15.6 18.7 12 24 12Z"/>
+          </svg>
+          <span>Iniciar sesión con Google</span>
+        </button>
+      </div>
+      <p class="status-message" id="google-status" role="status" aria-live="polite"></p>
+
+      <p class="account-help" id="account-help" hidden>
+        <span>¿Ya tienes cuenta?</span>
+        <button class="text-button" id="switch-to-login" type="button">Inicia sesión</button>
+      </p>
+      <button class="text-button forgot-link" id="forgot-button" type="button">¿Olvidaste tu contraseña?</button>
+      </div>
+
+      <section class="verification-panel" id="verification-panel" aria-labelledby="verification-title" hidden>
+        <div class="verification-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <path d="m3 7 9 6 9-6"/>
+          </svg>
+        </div>
+        <p class="eyebrow">Un paso más</p>
+        <h1 id="verification-title">Verifica tu cuenta</h1>
+        <p class="verification-copy">Hemos enviado un código de seguridad de 6 dígitos a tu correo electrónico<br><span class="verification-email" id="verification-email"></span></p>
+
+        <form id="verification-form" novalidate>
+          <div class="code-inputs" role="group" aria-label="Código de seguridad de seis dígitos">
+            <input class="code-input" aria-label="Dígito 1" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" required>
+            <input class="code-input" aria-label="Dígito 2" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+            <input class="code-input" aria-label="Dígito 3" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+            <input class="code-input" aria-label="Dígito 4" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+            <input class="code-input" aria-label="Dígito 5" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+            <input class="code-input" aria-label="Dígito 6" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+          </div>
+          <p class="status-message" id="verification-status" role="status" aria-live="polite"></p>
+          <p class="development-code" id="development-code" hidden></p>
+          <button class="primary-button" id="verify-button" type="submit">Verificar código</button>
+        </form>
+
+        <div class="verification-success" id="verification-success" role="status" hidden></div>
+        <p class="resend-copy" id="resend-copy">¿No llegó el correo?
+          <button class="text-button resend-button" id="resend-button" type="button" disabled>
+            <span>Reenviar correo si no llegó</span> · <span id="resend-countdown">60</span>s
+          </button>
+        </p>
+        <button class="text-button forgot-link" id="back-to-login" type="button">Volver al inicio de sesión</button>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>JP-Ads · Acceso de anunciantes</p>
+  </footer>
+
+  <dialog id="recovery-dialog" aria-labelledby="recovery-title">
+    <form class="dialog-content" id="recovery-form" novalidate>
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">Recuperación de cuenta</p>
+          <h2 id="recovery-title">Restablece tu acceso</h2>
+          <p>Indica el correo asociado a tu cuenta para solicitar instrucciones de recuperación.</p>
+        </div>
+        <button class="dialog-close" id="close-dialog" type="button" aria-label="Cerrar diálogo">×</button>
+      </div>
+      <div class="field">
+        <label for="recovery-email">Correo electrónico</label>
+        <input class="control" id="recovery-email" name="email" type="email" placeholder="tu@empresa.com" autocomplete="email" maxlength="254" required>
+      </div>
+      <button class="primary-button" type="submit">Enviar instrucciones</button>
+      <p class="status-message" id="recovery-status" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <script>
+    const GOOGLE_CLIENT_ID = "";
+    const AUTH_ENDPOINTS = {
+      login: "",
+      register: "",
+      recover: "",
+      google: ""
+    };
+
+    const authForm = document.querySelector("#auth-form");
+    const authPanel = document.querySelector("#auth-panel");
+    const verificationPanel = document.querySelector("#verification-panel");
+    const emailInput = document.querySelector("#email");
+    const passwordInput = document.querySelector("#password");
+    const confirmPasswordInput = document.querySelector("#confirm-password");
+    const confirmField = document.querySelector("#confirm-field");
+    const loginMode = document.querySelector("#login-mode");
+    const registerMode = document.querySelector("#register-mode");
+    const submitButton = document.querySelector("#submit-button");
+    const authStatus = document.querySelector("#auth-status");
+    const googleStatus = document.querySelector("#google-status");
+    const googleFallback = document.querySelector("#google-fallback");
+    const forgotButton = document.querySelector("#forgot-button");
+    const recoveryDialog = document.querySelector("#recovery-dialog");
+    const recoveryForm = document.querySelector("#recovery-form");
+    const recoveryEmail = document.querySelector("#recovery-email");
+    const recoveryStatus = document.querySelector("#recovery-status");
+    const verificationForm = document.querySelector("#verification-form");
+    const verificationInputs = [...document.querySelectorAll(".code-input")];
+    const verificationStatus = document.querySelector("#verification-status");
+    const developmentCode = document.querySelector("#development-code");
+    const verificationSuccess = document.querySelector("#verification-success");
+    const resendButton = document.querySelector("#resend-button");
+    const resendCountdown = document.querySelector("#resend-countdown");
+    const verifyButton = document.querySelector("#verify-button");
+    let verificationEmail = "";
+    let resendTimer = null;
+    let authMode = "login";
+
+    function clearStatus(element) {
+      element.textContent = "";
+      element.classList.remove("is-error");
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const isRegister = mode === "register";
+      loginMode.setAttribute("aria-pressed", String(!isRegister));
+      registerMode.setAttribute("aria-pressed", String(isRegister));
+      confirmField.hidden = !isRegister;
+      confirmPasswordInput.disabled = !isRegister;
+      confirmPasswordInput.required = isRegister;
+      passwordInput.autocomplete = isRegister ? "new-password" : "current-password";
+      submitButton.textContent = isRegister ? "Crear cuenta" : "Iniciar sesión";
+      document.querySelector("#page-title").textContent = isRegister ? "Crea tu cuenta" : "Qué bueno verte";
+      document.querySelector("#form-intro").textContent = isRegister
+        ? "Regístrate para empezar a anunciar con JP-Ads."
+        : "Inicia sesión para administrar tus campañas.";
+      document.querySelector("#account-help").hidden = !isRegister;
+      forgotButton.hidden = isRegister;
+      clearStatus(authStatus);
+    }
+
+    loginMode.addEventListener("click", () => setAuthMode("login"));
+    registerMode.addEventListener("click", () => setAuthMode("register"));
+    document.querySelector("#switch-to-login").addEventListener("click", () => setAuthMode("login"));
+
+    document.querySelector("#password-toggle").addEventListener("click", (event) => {
+      const button = event.currentTarget;
+      const reveal = passwordInput.type === "password";
+      passwordInput.type = reveal ? "text" : "password";
+      confirmPasswordInput.type = reveal ? "text" : "password";
+      button.setAttribute("aria-pressed", String(reveal));
+      button.setAttribute("aria-label", reveal ? "Ocultar contraseña" : "Mostrar contraseña");
+    });
+
+    function validateEmail(input) {
+      input.value = input.value.trim();
+      return input.reportValidity();
+    }
+
+    authForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearStatus(authStatus);
+
+      if (!validateEmail(emailInput) || !passwordInput.reportValidity()) {
+        return;
+      }
+      if (authMode === "register" && !confirmPasswordInput.reportValidity()) {
+        return;
+      }
+      if (authMode === "register" && passwordInput.value !== confirmPasswordInput.value) {
+        confirmPasswordInput.setCustomValidity("Las contraseñas no coinciden.");
+        confirmPasswordInput.reportValidity();
+        confirmPasswordInput.setCustomValidity("");
+        return;
+      }
+
+      const endpoint = authMode === "register" ? "/api/auth/register" : AUTH_ENDPOINTS.login;
+      if (!endpoint) {
+        authStatus.textContent = `El servicio de ${authMode === "login" ? "inicio de sesión" : "registro"} todavía no está conectado.`;
+        authStatus.classList.add("is-error");
+        return;
+      }
+
+      submitButton.disabled = true;
+      authStatus.textContent = "Procesando...";
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailInput.value, password: passwordInput.value })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "No se pudo completar la solicitud.");
+        }
+        if (authMode === "register") {
+          showVerificationStep(emailInput.value.trim(), result);
+        } else {
+          authStatus.textContent = result.message || "Solicitud completada.";
+        }
+      } catch (error) {
+        authStatus.textContent = error.message || "No se pudo conectar con el servicio de autenticación.";
+        authStatus.classList.add("is-error");
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    function showVerificationStep(email, result) {
+      verificationEmail = email;
+      document.querySelector("#verification-email").textContent = email;
+      authPanel.hidden = true;
+      verificationPanel.hidden = false;
+      verificationSuccess.hidden = true;
+      verificationForm.hidden = false;
+      verificationInputs.forEach((input) => {
+        input.value = "";
+        input.disabled = false;
+      });
+      verifyButton.disabled = false;
+      clearStatus(verificationStatus);
+      developmentCode.hidden = !result.developmentCode;
+      developmentCode.textContent = result.developmentCode
+        ? `Modo simulado de desarrollo · código: ${result.developmentCode}`
+        : "";
+      startResendCountdown(result.resendAfterSeconds || 60);
+      verificationInputs[0].focus();
+    }
+
+    function startResendCountdown(seconds) {
+      if (resendTimer) {
+        clearInterval(resendTimer);
+      }
+      let remaining = Math.max(0, Math.ceil(seconds));
+      resendCountdown.textContent = String(remaining);
+      resendButton.disabled = remaining > 0;
+      if (remaining === 0) {
+        return;
+      }
+      resendTimer = setInterval(() => {
+        remaining -= 1;
+        resendCountdown.textContent = String(remaining);
+        if (remaining <= 0) {
+          clearInterval(resendTimer);
+          resendTimer = null;
+          resendButton.disabled = false;
+        }
+      }, 1000);
+    }
+
+    function setVerificationCode(code) {
+      verificationInputs.forEach((input, index) => {
+        input.value = code[index] || "";
+      });
+    }
+
+    verificationInputs.forEach((input, index) => {
+      input.addEventListener("input", () => {
+        const digits = input.value.replace(/\D/g, "");
+        input.value = digits.slice(-1);
+        if (input.value && index < verificationInputs.length - 1) {
+          verificationInputs[index + 1].focus();
+        }
+        clearStatus(verificationStatus);
+      });
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Backspace" && !input.value && index > 0) {
+          verificationInputs[index - 1].focus();
+        } else if (event.key === "ArrowLeft" && index > 0) {
+          verificationInputs[index - 1].focus();
+        } else if (event.key === "ArrowRight" && index < verificationInputs.length - 1) {
+          verificationInputs[index + 1].focus();
+        } else if (event.key === "Enter") {
+          verificationForm.requestSubmit();
+        }
+      });
+
+      input.addEventListener("paste", (event) => {
+        const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+        if (!pasted) {
+          return;
+        }
+        event.preventDefault();
+        setVerificationCode(pasted);
+        verificationInputs[Math.min(pasted.length, verificationInputs.length) - 1].focus();
+        clearStatus(verificationStatus);
+      });
+    });
+
+    verificationForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearStatus(verificationStatus);
+      const code = verificationInputs.map((input) => input.value).join("");
+      if (!/^\d{6}$/.test(code)) {
+        verificationStatus.textContent = "Escribe los 6 dígitos del código recibido.";
+        verificationStatus.classList.add("is-error");
+        verificationInputs.find((input) => !input.value)?.focus();
+        return;
+      }
+
+      verifyButton.disabled = true;
+      verificationStatus.textContent = "Verificando código...";
+      try {
+        const response = await fetch("/api/auth/verify-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: verificationEmail, code })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "No se pudo verificar el código.");
+        }
+        if (resendTimer) {
+          clearInterval(resendTimer);
+          resendTimer = null;
+        }
+        verificationForm.hidden = true;
+        document.querySelector("#resend-copy").hidden = true;
+        verificationSuccess.hidden = false;
+        verificationSuccess.textContent = result.message || "Correo verificado. Tu cuenta está activada.";
+      } catch (error) {
+        verificationStatus.textContent = error.message || "No se pudo verificar el código.";
+        verificationStatus.classList.add("is-error");
+        verifyButton.disabled = false;
+      }
+    });
+
+    resendButton.addEventListener("click", async () => {
+      if (resendButton.disabled || !verificationEmail) {
+        return;
+      }
+      resendButton.disabled = true;
+      clearStatus(verificationStatus);
+      verificationStatus.textContent = "Enviando un nuevo código...";
+      try {
+        const response = await fetch("/api/auth/resend-verification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: verificationEmail })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          if (result.retryAfterSeconds) {
+            startResendCountdown(result.retryAfterSeconds);
+          } else {
+            resendButton.disabled = false;
+          }
+          throw new Error(result.error || "No se pudo reenviar el código.");
+        }
+        verificationInputs.forEach((input) => {
+          input.value = "";
+        });
+        verificationInputs[0].focus();
+        developmentCode.hidden = !result.developmentCode;
+        developmentCode.textContent = result.developmentCode
+          ? `Modo simulado de desarrollo · código: ${result.developmentCode}`
+          : "";
+        verificationStatus.textContent = result.message || "Enviamos un nuevo código.";
+        startResendCountdown(result.resendAfterSeconds || 60);
+      } catch (error) {
+        verificationStatus.textContent = error.message || "No se pudo reenviar el código.";
+        verificationStatus.classList.add("is-error");
+      }
+    });
+
+    document.querySelector("#back-to-login").addEventListener("click", () => {
+      if (resendTimer) {
+        clearInterval(resendTimer);
+        resendTimer = null;
+      }
+      verificationPanel.hidden = true;
+      authPanel.hidden = false;
+      setAuthMode("login");
+      emailInput.value = verificationEmail;
+      passwordInput.value = "";
+      emailInput.focus();
+    });
+
+    forgotButton.addEventListener("click", () => {
+      recoveryStatus.textContent = "";
+      recoveryStatus.classList.remove("is-error");
+      recoveryEmail.value = emailInput.value.trim();
+      recoveryDialog.showModal();
+      recoveryEmail.focus();
+    });
+
+    document.querySelector("#close-dialog").addEventListener("click", () => recoveryDialog.close());
+    recoveryDialog.addEventListener("click", (event) => {
+      if (event.target === recoveryDialog) {
+        recoveryDialog.close();
+      }
+    });
+
+    recoveryForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearStatus(recoveryStatus);
+      if (!validateEmail(recoveryEmail)) {
+        return;
+      }
+
+      if (!AUTH_ENDPOINTS.recover) {
+        recoveryStatus.textContent = "El servicio de recuperación todavía no está conectado.";
+        recoveryStatus.classList.add("is-error");
+        return;
+      }
+
+      const recoverySubmit = recoveryForm.querySelector('button[type="submit"]');
+      recoverySubmit.disabled = true;
+      recoveryStatus.textContent = "Enviando solicitud...";
+      try {
+        const response = await fetch(AUTH_ENDPOINTS.recover, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: recoveryEmail.value })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "No se pudo procesar la solicitud.");
+        }
+        recoveryStatus.textContent = result.message || "Si el correo está registrado, recibirás instrucciones.";
+      } catch (error) {
+        recoveryStatus.textContent = error.message || "No se pudo conectar con el servicio de recuperación.";
+        recoveryStatus.classList.add("is-error");
+      } finally {
+        recoverySubmit.disabled = false;
+      }
+    });
+
+    googleFallback.addEventListener("click", () => {
+      googleStatus.textContent = "Configura GOOGLE_CLIENT_ID y el endpoint de verificación en el servidor para habilitar Google.";
+      googleStatus.classList.add("is-error");
+    });
+
+    let googleInitialized = false;
+
+    function initializeGoogleIdentity() {
+      if (googleInitialized || !GOOGLE_CLIENT_ID || !window.google?.accounts?.id) {
+        return;
+      }
+
+      googleInitialized = true;
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential
+      });
+      document.querySelector("#google-button-container").replaceChildren();
+      window.google.accounts.id.renderButton(document.querySelector("#google-button-container"), {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        shape: "rectangular",
+        logo_alignment: "left",
+        width: 360,
+        locale: "es"
+      });
+      googleFallback.hidden = true;
+    }
+
+    async function handleGoogleCredential(response) {
+      clearStatus(googleStatus);
+      if (!AUTH_ENDPOINTS.google) {
+        googleStatus.textContent = "Google devolvió una credencial, pero falta conectarla a un servidor que la verifique.";
+        googleStatus.classList.add("is-error");
+        return;
+      }
+
+      googleStatus.textContent = "Verificando acceso...";
+      try {
+        const result = await fetch(AUTH_ENDPOINTS.google, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        const payload = await result.json();
+        if (!result.ok) {
+          throw new Error(payload.error || "No se pudo verificar el acceso con Google.");
+        }
+        googleStatus.textContent = payload.message || "Acceso verificado.";
+      } catch (error) {
+        googleStatus.textContent = error.message || "No se pudo conectar con el servicio de acceso de Google.";
+        googleStatus.classList.add("is-error");
+      }
+    }
+
+    const googleScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    googleScript.addEventListener("load", initializeGoogleIdentity, { once: true });
+    initializeGoogleIdentity();
+  </script>
+</body>
+</html>

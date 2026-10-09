@@ -1,13 +1,22 @@
 (() => {
   const TOKEN_KEY = 'gcoin.accessToken';
-  const API_BASE = 'https://gcoin-backend.onrender.com';
+  const isLocalDevelopment = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+  const API_BASE = isLocalDevelopment ? window.location.origin : 'https://gcoin-backend.onrender.com';
   const API = `${API_BASE}/api`;
   const MILESTONE_POINTS = [1000, 3000, 5000, 7000, 9000];
   const svgNamespace = 'http://www.w3.org/2000/svg';
   const authView = document.getElementById('auth-view');
+  const authArt = authView.querySelector('.auth-art');
   const dashboardView = document.getElementById('dashboard-view');
   const authForm = document.getElementById('auth-form');
   const authMessage = document.getElementById('auth-message');
+  const forgotPasswordForm = document.getElementById('forgot-password-form');
+  const forgotPasswordMessage = document.getElementById('forgot-password-message');
+  const resetPasswordForm = document.getElementById('reset-password-form');
+  const resetPasswordMessage = document.getElementById('reset-password-message');
+  const recoveryEmailForm = document.getElementById('recovery-email-form');
+  const recoveryEmailInput = document.getElementById('recovery-email');
+  const recoveryEmailMessage = document.getElementById('recovery-email-message');
   const nodeForm = document.getElementById('node-form');
   const nodeMessage = document.getElementById('node-message');
   const dashboardMessage = document.getElementById('dashboard-message');
@@ -27,6 +36,7 @@
   const spinButton = document.getElementById('spin-button');
   const rouletteMessage = document.getElementById('roulette-message');
   const rouletteResult = document.getElementById('roulette-result');
+  const spinButtonLabel = document.getElementById('spin-button-label');
   const walletForm = document.getElementById('wallet-form');
   const payoutWallet = document.getElementById('payout-wallet');
   const payoutMessage = document.getElementById('payout-message');
@@ -40,7 +50,16 @@
   let toastTimer = null;
   let wheelRotation = 0;
   let spinInProgress = false;
+  let spinCountdownInterval = null;
+  let pendingSpinRequestId = null;
+  let spinCountdownMode = null;
   let lastClaimed = new Set();
+  const spinCountdownDialog = document.getElementById('spin-countdown-dialog');
+  const spinCountdownValue = document.getElementById('spin-countdown');
+  const spinCountdownTitle = document.getElementById('spin-countdown-title');
+  const spinCountdownDescription = document.getElementById('spin-countdown-description');
+  const adsterraFrame = document.getElementById('adsterra-frame');
+  const closeAdDialogButton = document.getElementById('close-ad-dialog');
 
   const formatNumber = (value, maximumFractionDigits = 2) =>
     new Intl.NumberFormat('es-PY', { maximumFractionDigits }).format(Number(value) || 0);
@@ -76,7 +95,13 @@
       headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const response = await fetch(new URL(url, API_BASE), { ...options, headers });
+    let response;
+    try {
+      response = await fetch(new URL(url, API_BASE), { ...options, headers });
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      throw new Error(`No se pudo conectar con la API: ${error.message}`);
+    }
     let data;
     try {
       data = await response.json();
@@ -88,7 +113,9 @@
       if (response.status === 401 || response.status === 403) {
         clearSession(false);
       }
-      throw new Error(data.error || 'No se pudo completar la solicitud.');
+      const endpoint = new URL(url, API_BASE).pathname;
+      const serverMessage = data && typeof data.error === 'string' ? data.error : null;
+      throw new Error(serverMessage || `La API respondió ${response.status} para ${endpoint}.`);
     }
     return data;
   };
@@ -97,6 +124,21 @@
     element.textContent = message;
     element.classList.toggle('error', kind === 'error');
     element.classList.toggle('success', kind === 'success');
+  };
+
+  const inFlightButtons = new WeakSet();
+  const lockButton = (button) => {
+    // The guard also blocks repeated events before another request can start.
+    if (button.disabled || inFlightButtons.has(button)) return false;
+    inFlightButtons.add(button);
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    return true;
+  };
+  const unlockButton = (button, disabled = false) => {
+    inFlightButtons.delete(button);
+    button.disabled = disabled;
+    button.removeAttribute('aria-busy');
   };
 
   const showToast = (message) => {
@@ -585,7 +627,7 @@
         retry.className = 'button button-quiet';
         retry.textContent = 'Reintentar aviso';
         retry.addEventListener('click', async () => {
-          retry.disabled = true;
+          if (!lockButton(retry)) return;
           setMessage(payoutMessage, 'Reintentando el aviso por correo…');
           try {
             const result = await apiRequest(`${API}/me/withdrawals/${withdrawal.id}/notify`, {
@@ -596,7 +638,7 @@
           } catch (error) {
             setMessage(payoutMessage, error.message, 'error');
           } finally {
-            retry.disabled = false;
+            unlockButton(retry);
           }
         });
         item.append(retry);
@@ -606,32 +648,81 @@
   };
 
   const refreshDashboard = async (announceErrors = false) => {
-    try {
-      const [points, nodes, wallet, withdrawals] = await Promise.all([
-        apiRequest(`${API}/me/points`),
-        apiRequest(`${API}/nodes`),
-        apiRequest(`${API}/me/wallet`),
-        apiRequest(`${API}/me/withdrawals`),
-      ]);
-      renderPoints(points);
-      renderNodes(nodes.nodes || []);
-      if (document.activeElement !== payoutWallet) {
-        payoutWallet.value = wallet.walletAddress || '';
+    if (announceErrors && !sessionStorage.getItem(TOKEN_KEY)) return false;
+
+    const results = await Promise.allSettled([
+      apiRequest(`${API}/me/points`),
+      apiRequest(`${API}/nodes`),
+      apiRequest(`${API}/me/wallet`),
+      apiRequest(`${API}/me/withdrawals`),
+      apiRequest(`${API}/me/email`),
+    ]);
+    const [pointsResult, nodesResult, walletResult, withdrawalsResult, emailResult] = results;
+    const failures = [];
+    const recordFailure = (label, result) => {
+      if (result.status === 'rejected') {
+        const message = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        failures.push(`${label}: ${message}`);
       }
-      renderWithdrawals(withdrawals.withdrawals || []);
-      const hasPendingWithdrawal = (withdrawals.withdrawals || [])
+    };
+
+    if (pointsResult.status === 'fulfilled') {
+      renderPoints(pointsResult.value);
+    } else {
+      recordFailure('Puntos y ruleta', pointsResult);
+    }
+
+    if (nodesResult.status === 'fulfilled') {
+      renderNodes(Array.isArray(nodesResult.value.nodes) ? nodesResult.value.nodes : []);
+    } else {
+      recordFailure('Nodos AURA', nodesResult);
+    }
+
+    if (walletResult.status === 'fulfilled') {
+      if (document.activeElement !== payoutWallet) {
+        payoutWallet.value = walletResult.value.walletAddress || '';
+      }
+    } else {
+      recordFailure('Wallet', walletResult);
+    }
+
+    if (emailResult.status === 'fulfilled') {
+      if (document.activeElement !== recoveryEmailInput) {
+        recoveryEmailInput.value = emailResult.value.email || '';
+      }
+    } else {
+      recordFailure('Correo de recuperación', emailResult);
+    }
+
+    if (withdrawalsResult.status === 'fulfilled') {
+      const withdrawals = Array.isArray(withdrawalsResult.value.withdrawals)
+        ? withdrawalsResult.value.withdrawals
+        : [];
+      renderWithdrawals(withdrawals);
+      const hasPendingWithdrawal = withdrawals
         .some((withdrawal) => withdrawal.status === 'PENDING');
-      withdrawButton.disabled = !points.payoutRateConfigured ||
+      const points = pointsResult.status === 'fulfilled' ? pointsResult.value : null;
+      const wallet = walletResult.status === 'fulfilled' ? walletResult.value : null;
+      withdrawButton.disabled = !points ||
+        !wallet ||
+        !points.payoutRateConfigured ||
         Number(points.payoutBalanceUsd) < 5 ||
         !wallet.walletAddress ||
         hasPendingWithdrawal;
-      dashboardMessage.classList.add('hidden');
-    } catch (error) {
-      if (announceErrors && !sessionStorage.getItem(TOKEN_KEY)) return;
-      dashboardMessage.textContent = error.message;
+    } else {
+      withdrawButton.disabled = true;
+      recordFailure('Retiros', withdrawalsResult);
+    }
+
+    if (failures.length) {
+      dashboardMessage.textContent = `Algunos datos no se pudieron sincronizar. ${failures.join(' · ')}`;
       dashboardMessage.classList.remove('hidden');
       if (announceErrors) dashboardMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return false;
     }
+
+    dashboardMessage.classList.add('hidden');
+    return true;
   };
 
   const startDashboard = async (username) => {
@@ -644,6 +735,10 @@
 
   const setAuthMode = (mode) => {
     authMode = mode;
+    authArt.classList.remove('hidden');
+    authForm.classList.remove('hidden');
+    forgotPasswordForm.classList.add('hidden');
+    resetPasswordForm.classList.add('hidden');
     document.querySelectorAll('[data-auth-mode]').forEach((button) => {
       const active = button.dataset.authMode === mode;
       button.classList.toggle('active', active);
@@ -655,6 +750,8 @@
       ? 'Crea tu cuenta y deja tu primera huella.'
       : 'Entra a tu espacio y sigue avanzando.';
     document.getElementById('auth-password').autocomplete = registering ? 'new-password' : 'current-password';
+    document.getElementById('auth-email-field').classList.toggle('hidden', !registering);
+    document.getElementById('auth-email').required = registering;
     document.getElementById('referrer-field').classList.toggle('hidden', !registering);
     document.getElementById('auth-referrer').required = false;
     document.getElementById('auth-submit').innerHTML = registering
@@ -667,14 +764,98 @@
     button.addEventListener('click', () => setAuthMode(button.dataset.authMode));
   });
 
+  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const passwordInput = document.getElementById(button.dataset.passwordToggle);
+      const showingPassword = passwordInput.type === 'password';
+      passwordInput.type = showingPassword ? 'text' : 'password';
+      button.setAttribute('aria-pressed', String(showingPassword));
+      button.setAttribute('aria-label', showingPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+  });
+
+  document.getElementById('forgot-password-link').addEventListener('click', () => {
+    const authEmail = document.getElementById('auth-email').value.trim();
+    authArt.classList.add('hidden');
+    authForm.classList.add('hidden');
+    resetPasswordForm.classList.add('hidden');
+    forgotPasswordForm.classList.remove('hidden');
+    if (authEmail) document.getElementById('forgot-password-email').value = authEmail;
+    setMessage(forgotPasswordMessage, '');
+    document.getElementById('forgot-password-email').focus();
+  });
+
+  document.querySelectorAll('[data-auth-return]').forEach((button) => {
+    button.addEventListener('click', () => {
+      setAuthMode('login');
+      document.getElementById('auth-username').focus();
+    });
+  });
+
+  forgotPasswordForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = forgotPasswordForm.querySelector('button[type="submit"]');
+    if (!lockButton(submit)) return;
+    setMessage(forgotPasswordMessage, 'Enviando solicitud…');
+    try {
+      const result = await apiRequest('/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email: document.getElementById('forgot-password-email').value.trim() }),
+      });
+      setMessage(forgotPasswordMessage, result.message, 'success');
+    } catch (error) {
+      setMessage(forgotPasswordMessage, error.message, 'error');
+    } finally {
+      unlockButton(submit);
+    }
+  });
+
+  const resetToken = new URLSearchParams(window.location.hash.slice(1)).get('resetToken');
+  if (resetToken) {
+    authArt.classList.add('hidden');
+    authForm.classList.add('hidden');
+    forgotPasswordForm.classList.add('hidden');
+    resetPasswordForm.classList.remove('hidden');
+  }
+
+  resetPasswordForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!resetToken) {
+      setMessage(resetPasswordMessage, 'El enlace de recuperación no contiene un token válido.', 'error');
+      return;
+    }
+    const submit = resetPasswordForm.querySelector('button[type="submit"]');
+    if (!lockButton(submit)) return;
+    setMessage(resetPasswordMessage, 'Actualizando contraseña…');
+    try {
+      const result = await apiRequest('/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          token: resetToken,
+          password: document.getElementById('reset-password').value,
+        }),
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+      resetPasswordForm.reset();
+      setAuthMode('login');
+      setMessage(authMessage, result.message, 'success');
+      document.getElementById('auth-username').focus();
+    } catch (error) {
+      setMessage(resetPasswordMessage, error.message, 'error');
+    } finally {
+      unlockButton(submit);
+    }
+  });
+
   authForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const submit = document.getElementById('auth-submit');
-    submit.disabled = true;
+    if (!lockButton(submit)) return;
     setMessage(authMessage, authMode === 'register' ? 'Preparando tu cuenta…' : 'Verificando tus datos…');
     const username = document.getElementById('auth-username').value.trim();
     const password = document.getElementById('auth-password').value;
     const body = { username, password };
+    if (authMode === 'register') body.email = document.getElementById('auth-email').value.trim();
     const referredBy = document.getElementById('auth-referrer').value.trim();
     if (authMode === 'register' && referredBy) body.referredBy = referredBy;
 
@@ -693,14 +874,33 @@
     } catch (error) {
       setMessage(authMessage, error.message, 'error');
     } finally {
-      submit.disabled = false;
+      unlockButton(submit);
+    }
+  });
+
+  recoveryEmailForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = document.getElementById('save-recovery-email-button');
+    if (!lockButton(submit)) return;
+    setMessage(recoveryEmailMessage, 'Guardando correo…');
+    try {
+      const result = await apiRequest(`${API}/me/email`, {
+        method: 'PUT',
+        body: JSON.stringify({ email: recoveryEmailInput.value.trim() }),
+      });
+      recoveryEmailInput.value = result.email;
+      setMessage(recoveryEmailMessage, 'Correo de recuperación guardado.', 'success');
+    } catch (error) {
+      setMessage(recoveryEmailMessage, error.message, 'error');
+    } finally {
+      unlockButton(submit);
     }
   });
 
   nodeForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const submit = nodeForm.querySelector('button[type="submit"]');
-    submit.disabled = true;
+    if (!lockButton(submit)) return;
     setMessage(nodeMessage, 'Registrando tu nodo…');
     const nodeName = document.getElementById('node-name').value.trim();
     const walletAddress = document.getElementById('wallet-address').value.trim();
@@ -722,14 +922,14 @@
     } catch (error) {
       setMessage(nodeMessage, error.message, 'error');
     } finally {
-      submit.disabled = false;
+      unlockButton(submit);
     }
   });
 
   walletForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = document.getElementById('save-wallet-button');
-    button.disabled = true;
+    if (!lockButton(button)) return;
     setMessage(payoutMessage, 'Guardando tu wallet…');
     try {
       await apiRequest(`${API}/me/wallet`, {
@@ -741,20 +941,23 @@
     } catch (error) {
       setMessage(payoutMessage, error.message, 'error');
     } finally {
-      button.disabled = false;
+      unlockButton(button);
     }
   });
 
   withdrawButton.addEventListener('click', async () => {
-    withdrawButton.disabled = true;
+    if (!lockButton(withdrawButton)) return;
     setMessage(payoutMessage, 'Creando una solicitud y reservando el saldo disponible…');
+    let dashboardRefreshed = false;
     try {
       const result = await apiRequest(`${API}/me/withdrawals`, { method: 'POST' });
       setMessage(payoutMessage, result.message, result.notificationSent ? 'success' : 'error');
-      await refreshDashboard(false);
+      dashboardRefreshed = await refreshDashboard(false);
     } catch (error) {
       setMessage(payoutMessage, error.message, 'error');
-      await refreshDashboard(false);
+      dashboardRefreshed = await refreshDashboard(false);
+    } finally {
+      unlockButton(withdrawButton, dashboardRefreshed && withdrawButton.disabled);
     }
   });
 
@@ -784,29 +987,42 @@
     await waitForWheel();
   };
 
-  spinButton.addEventListener('click', async () => {
-    if (spinInProgress) return;
-
-    spinInProgress = true;
-    spinButton.disabled = true;
+  const executeRouletteSpin = async () => {
     rouletteResult.classList.add('hidden');
+    rouletteMessage.classList.remove('error');
+    spinButtonLabel.textContent = 'PROCESANDO…';
     setMessage(rouletteMessage, 'El servidor está sorteando tu premio…');
+    const requestId = pendingSpinRequestId || createRequestId();
+    pendingSpinRequestId = requestId;
+    const controller = new AbortController();
+    const requestTimeout = window.setTimeout(() => controller.abort(), 20000);
+    let refreshAfterSpin = false;
 
     try {
       const result = await apiRequest(`${API}/roulette/spin`, {
         method: 'POST',
-        headers: { 'Idempotency-Key': createRequestId() },
+        headers: { 'Idempotency-Key': requestId },
+        signal: controller.signal,
       });
-      await animatePrize(result.selectedPrizePoints);
+      pendingSpinRequestId = null;
+      refreshAfterSpin = true;
+      if (pointsCycle) {
+        pointsCycle = {
+          ...pointsCycle,
+          pointsToday: result.pointsToday,
+          dailyLimit: result.dailyLimit,
+          rouletteSpinsRemaining: result.spinsRemaining,
+        };
+      }
 
       rouletteResult.replaceChildren();
-      const awardedPoints = document.createElement('strong');
-      awardedPoints.textContent = `+${formatNumber(result.pointsAdded)} PUNTOS`;
-      const details = document.createElement('span');
-      details.textContent = result.pointsAdded < result.selectedPrizePoints
-        ? `Salió ${formatNumber(result.selectedPrizePoints, 0)}; se acreditaron ${formatNumber(result.pointsAdded)} para respetar el tope del ciclo.`
-        : `¡Salió ${formatNumber(result.selectedPrizePoints, 0)} puntos!`;
-      rouletteResult.append(awardedPoints, details);
+      const selectedPrize = document.createElement('strong');
+      selectedPrize.textContent = `PREMIO: ${formatNumber(result.selectedPrizePoints, 0)} PUNTOS`;
+      const awardedPoints = document.createElement('span');
+      awardedPoints.textContent = result.pointsAdded < result.selectedPrizePoints
+        ? `Se acreditaron +${formatNumber(result.pointsAdded)} puntos para respetar el tope del ciclo.`
+        : `Acreditados en tu cuenta: +${formatNumber(result.pointsAdded)} puntos.`;
+      rouletteResult.append(selectedPrize, awardedPoints);
       if (result.gemsAdded > 0) {
         const gems = document.createElement('span');
         gems.textContent = ` Hito alcanzado: +${formatNumber(result.gemsAdded, 0)} gemas.`;
@@ -814,7 +1030,7 @@
       }
       rouletteResult.classList.remove('hidden');
 
-      await refreshDashboard(false);
+      await animatePrize(result.selectedPrizePoints);
       if (result.spinsRemaining <= 0) {
         rouletteMessage.textContent = 'Usaste tus 15 giros. Volverán cuando inicie tu próximo ciclo.';
       } else if (pointsCycle && pointsCycle.pointsToday >= pointsCycle.dailyLimit) {
@@ -823,12 +1039,16 @@
         rouletteMessage.textContent = `Quedan ${formatNumber(result.spinsRemaining, 0)} giros en este ciclo de 24 horas.`;
       }
     } catch (error) {
-      rouletteMessage.textContent = error.message;
+      rouletteMessage.textContent = error.name === 'AbortError'
+        ? 'El servidor tardó demasiado en responder. Puedes reintentar; se conservará la misma solicitud para evitar duplicar el giro.'
+        : error.message;
       rouletteMessage.classList.add('error');
-      await refreshDashboard(false);
+      refreshAfterSpin = true;
     } finally {
-      rouletteMessage.classList.remove('error');
+      window.clearTimeout(requestTimeout);
       spinInProgress = false;
+      spinButton.removeAttribute('aria-busy');
+      spinButtonLabel.textContent = 'GIRAR RULETA';
       if (pointsCycle) {
         spinButton.disabled =
           pointsCycle.rouletteSpinsRemaining <= 0 ||
@@ -836,6 +1056,93 @@
       } else {
         spinButton.disabled = true;
       }
+      if (refreshAfterSpin) void refreshDashboard(false);
+    }
+  };
+
+  const loadAdsterra = (placement) => {
+    adsterraFrame.src = placement === 'spin' ? '/ad-spin.html' : '/ad-banner.html';
+  };
+
+  const closeAdDialog = () => {
+    if (spinCountdownMode === 'spin') return;
+    spinCountdownDialog.classList.add('hidden');
+    adsterraFrame.src = 'about:blank';
+    spinCountdownMode = null;
+    spinButton.focus({ preventScroll: true });
+  };
+
+  spinButton.addEventListener('click', () => {
+    if (spinInProgress || spinButton.disabled) return;
+
+    spinInProgress = true;
+    spinButton.disabled = true;
+    rouletteResult.classList.add('hidden');
+    rouletteMessage.classList.remove('error');
+    spinCountdownMode = 'spin';
+    spinCountdownTitle.textContent = 'La ruleta está por girar';
+    spinCountdownDescription.textContent =
+      'El anuncio se muestra durante 30 segundos. El premio y los puntos los confirma el servidor.';
+    spinCountdownValue.textContent = '30';
+    spinCountdownValue.classList.remove('hidden');
+    closeAdDialogButton.classList.add('hidden');
+    spinCountdownDialog.classList.remove('hidden');
+    spinButton.setAttribute('aria-busy', 'true');
+    spinButtonLabel.textContent = 'ANUNCIO 30 s';
+    rouletteMessage.textContent = 'El anuncio está abierto; el giro comenzará automáticamente al terminar la cuenta atrás.';
+    try {
+      loadAdsterra('spin');
+      spinCountdownValue.focus({ preventScroll: true });
+      const countdownEndsAt = Date.now() + 30000;
+      const updateSpinCountdown = () => {
+        const secondsRemaining = Math.max(0, Math.ceil((countdownEndsAt - Date.now()) / 1000));
+        spinCountdownValue.textContent = String(secondsRemaining);
+        spinButtonLabel.textContent = `ANUNCIO ${secondsRemaining} s`;
+        if (secondsRemaining > 0) return;
+        window.clearInterval(spinCountdownInterval);
+        spinCountdownInterval = null;
+        spinCountdownDialog.classList.add('hidden');
+        adsterraFrame.src = 'about:blank';
+        spinCountdownMode = null;
+        void executeRouletteSpin();
+      };
+      spinCountdownInterval = window.setInterval(updateSpinCountdown, 250);
+    } catch (error) {
+      window.clearInterval(spinCountdownInterval);
+      spinCountdownInterval = null;
+      spinCountdownDialog.classList.add('hidden');
+      adsterraFrame.src = 'about:blank';
+      spinCountdownMode = null;
+      spinInProgress = false;
+      spinButton.removeAttribute('aria-busy');
+      spinButtonLabel.textContent = 'GIRAR RULETA';
+      spinButton.disabled = !pointsCycle ||
+        pointsCycle.rouletteSpinsRemaining <= 0 ||
+        pointsCycle.pointsToday >= pointsCycle.dailyLimit;
+      rouletteMessage.textContent = `No se pudo abrir el anuncio: ${error.message}`;
+      rouletteMessage.classList.add('error');
+    }
+  });
+
+  document.getElementById('watch-ad-button').addEventListener('click', () => {
+    spinCountdownMode = 'view';
+    spinCountdownTitle.textContent = 'Anuncio publicitario';
+    spinCountdownDescription.textContent =
+      'La visualización del anuncio no acredita saldo retirable.';
+    spinCountdownValue.classList.add('hidden');
+    closeAdDialogButton.classList.remove('hidden');
+    spinCountdownDialog.classList.remove('hidden');
+    loadAdsterra('view');
+    closeAdDialogButton.focus();
+  });
+
+  closeAdDialogButton.addEventListener('click', closeAdDialog);
+  spinCountdownDialog.addEventListener('click', (event) => {
+    if (event.target === spinCountdownDialog) closeAdDialog();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !spinCountdownDialog.classList.contains('hidden')) {
+      closeAdDialog();
     }
   });
 
@@ -863,25 +1170,12 @@
 
   document.getElementById('refresh-button').addEventListener('click', async (event) => {
     const button = event.currentTarget;
-    button.disabled = true;
-    await refreshDashboard(true);
-    button.disabled = false;
-  });
-  document.getElementById('open-ad-button').addEventListener('click', () => {
-    const adSlot = document.querySelector('.ad-slot');
-    adSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    adSlot.setAttribute('tabindex', '-1');
-    adSlot.focus({ preventScroll: true });
-  });
-  document.getElementById('open-payouts-button').addEventListener('click', () => {
-    if (dashboardView.classList.contains('hidden')) {
-      authForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      document.getElementById('auth-username').focus({ preventScroll: true });
-      setMessage(authMessage, 'Inicia sesión para consultar tus recompensas DePIN.');
-      return;
+    if (!lockButton(button)) return;
+    try {
+      await refreshDashboard(true);
+    } finally {
+      unlockButton(button);
     }
-    document.getElementById('payout-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('payout-wallet').focus({ preventScroll: true });
   });
   logoutButton.addEventListener('click', () => {
     lastClaimed = new Set();
@@ -898,7 +1192,7 @@
   window.setInterval(updateEnvironmentCycle, 60000);
 
   const accessToken = sessionStorage.getItem(TOKEN_KEY);
-  if (accessToken) {
+  if (accessToken && !resetToken) {
     const payload = accessToken.split('.')[1];
     try {
       const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
@@ -910,7 +1204,7 @@
       sessionStorage.removeItem(TOKEN_KEY);
       showAuthView();
     }
-  } else {
+  } else if (!resetToken) {
     showAuthView();
   }
 

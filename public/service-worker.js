@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gcoin-pwa-v2';
+const CACHE_NAME = 'gcoin-pwa-v13';
 const APP_SHELL = [
   '/',
   '/index.html',
